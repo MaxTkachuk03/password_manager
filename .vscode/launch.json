@@ -1,0 +1,39 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            // ✅ Універсальний запуск для Android
+            "name": "Launch Android",
+            "request": "launch",
+            "type": "dart",
+            "preLaunchTask": "Start Android Emulator",
+            "deviceId": "emulator-5554"
+        },
+        {
+            // ✅ Універсальний запуск для iOS
+            "name": "Launch iOS",
+            "request": "launch",
+            "type": "dart",
+            "preLaunchTask": "Start IOS Emulator"
+        },
+        {
+            // Цей запустить на тому пристрої,
+            // який зараз обраний у статус-барі VS Code
+            "name": "password_manager (Active Device)",
+            "request": "launch",
+            "type": "dart"
+        },
+        {
+            "name": "password_manager (profile mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "profile"
+        },
+        {
+            "name": "password_manager (release mode)",
+            "request": "launch",
+            "type": "dart",
+            "flutterMode": "release"
+        }
+    ]
+}
