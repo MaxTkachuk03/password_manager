@@ -1,0 +1,32 @@
+project:
+  name: password_manager
+  type: greenfield
+  selected_track: BMad Method
+  field_type: greenfield
+workflow_path:
+  - phase: Discovery
+    workflows:
+      - name: workflow-init
+        status: completed
+      - name: brainstorm-project
+        status: completed
+      - name: research
+        status: completed
+  - phase: Planning
+    workflows:
+      - name: product-brief
+        status: not_started
+      - name: tech-spec
+        status: not_started
+      - name: architecture-design
+        status: not_started
+  - phase: Solutioning
+    workflows:
+      - name: prototype
+        status: not_started
+      - name: design-sprint
+        status: not_started
+  - phase: Implementation
+    workflows:
+      - name: development
+        status: not_started
