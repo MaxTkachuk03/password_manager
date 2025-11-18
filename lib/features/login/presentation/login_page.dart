@@ -13,7 +13,10 @@ class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
     return CustomScaffold.blue(
-      appBar: CustomAppBar.green(),
+      appBar: CustomAppBar.green(
+        title: 'Login',
+        bottom: PreferredSize(preferredSize: Size(100, 10), child: Text("lohhhh"))
+      ),
       body: Column(
 
         

@@ -10,6 +10,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
   final CustomAppBarTextTheme? textTheme;
   final String? subtitle;
   final Widget? leading;
+  final bool isNeedLeading;
   final List<Widget>? actions;
   final Color? backgroundColor;
   final PreferredSizeWidget? bottom;
@@ -30,6 +31,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     this.onTap,
     this.customColor,
     this.isLightTextTheme,
+    this.isNeedLeading = false,
   });
 
   factory CustomAppBar.customColor({
@@ -40,6 +42,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     PreferredSizeWidget? bottom,
     bool isPsychology = false,
     Color? customColor,
+    bool isNeedLeading = false,
   }) => CustomAppBar(
     systemOverlayStyle: SystemUiOverlayStyle.dark,
     textTheme: isPsychology
@@ -49,6 +52,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     title: title,
     subtitle: subtitle,
     leading: leading,
+    isNeedLeading: isNeedLeading,
     actions: actions,
     bottom: bottom,
     isLightTextTheme: isPsychology,
@@ -75,6 +79,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     Widget? leading,
     List<Widget>? actions,
     PreferredSizeWidget? bottom,
+    bool isNeedLeading = false,
   }) => CustomAppBar(
     systemOverlayStyle: SystemUiOverlayStyle.dark,
     textTheme: CustomAppBarTextTheme.dark,
@@ -82,6 +87,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     title: title,
     subtitle: subtitle,
     leading: leading,
+    isNeedLeading: isNeedLeading,
     actions: actions,
     bottom: bottom,
   );
@@ -92,6 +98,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     Widget? leading,
     List<Widget>? actions,
     PreferredSizeWidget? bottom,
+    bool isNeedLeading = false,
   }) => CustomAppBar(
     systemOverlayStyle: SystemUiOverlayStyle.light,
     textTheme: CustomAppBarTextTheme.light,
@@ -99,6 +106,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     title: title,
     subtitle: subtitle,
     leading: leading,
+    isNeedLeading: isNeedLeading,
     actions: actions,
     bottom: bottom,
   );
@@ -108,6 +116,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     String? subtitle,
     Widget? leading,
     List<Widget>? actions,
+    bool isNeedLeading = false,
   }) => CustomAppBar(
     systemOverlayStyle: SystemUiOverlayStyle.light,
     textTheme: CustomAppBarTextTheme.light,
@@ -116,6 +125,7 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
     subtitle: subtitle,
     leading: leading,
     actions: actions,
+    isNeedLeading: isNeedLeading,
   );
 
   Color get _titleColor => textTheme == CustomAppBarTextTheme.dark
@@ -132,10 +142,12 @@ class CustomAppBar extends StatelessWidget implements PreferredSizeWidget {
       backgroundColor: backgroundColor,
       forceMaterialTransparency: backgroundColor == AppColors.transparent,
       automaticallyImplyLeading: false,
-      leading: Padding(
-        padding: const EdgeInsets.all(6.0),
-        child: leading ?? const BackButton(),
-      ),
+      leading: isNeedLeading
+          ? Padding(
+              padding: const EdgeInsets.all(6.0),
+              child: leading ?? const BackButton(),
+            )
+          : null,
       actions: actions,
       bottom: bottom,
       scrolledUnderElevation: 0,

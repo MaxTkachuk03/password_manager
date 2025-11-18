@@ -1,0 +1,12 @@
+installation:
+  version: 6.0.0-alpha.10
+  installDate: '2025-11-18T12:54:39.769Z'
+  lastUpdated: '2025-11-18T12:54:39.769Z'
+modules:
+  - core
+  - bmm
+ides:
+  - cursor
+  - windsurf
+  - cline
+  - roo
