@@ -5,6 +5,13 @@ plugins {
     id("dev.flutter.flutter-gradle-plugin")
 }
 
+dependencies {
+    // YubiKit Android dependencies
+    implementation("com.yubico.yubikit:yubikit-android:2.5.0")
+    implementation("com.yubico.yubikit:management:2.5.0")
+    implementation("com.yubico.yubikit:otp:2.5.0")
+}
+
 android {
     namespace = "com.example.password_manager"
     compileSdk = flutter.compileSdkVersion

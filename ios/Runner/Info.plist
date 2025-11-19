@@ -45,5 +45,7 @@
 	<true/>
 	<key>UIApplicationSupportsIndirectInputEvents</key>
 	<true/>
+	<key>NFCReaderUsageDescription</key>
+	<string>The application needs access to NFC reading to communicate with your YubiKey.</string>
 </dict>
 </plist>

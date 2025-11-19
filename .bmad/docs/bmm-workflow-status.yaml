@@ -15,15 +15,19 @@ workflow_path:
   - phase: Planning
     workflows:
       - name: product-brief
-        status: not_started
+        status: completed
       - name: tech-spec
-        status: not_started
+        status: completed
       - name: architecture-design
-        status: not_started
+        status: completed
   - phase: Solutioning
     workflows:
       - name: prototype
         status: not_started
+      - name: create-story
+        status: completed
+      - name: implementation-readiness
+        status: completed
       - name: design-sprint
         status: not_started
   - phase: Implementation

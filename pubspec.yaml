@@ -1,5 +1,5 @@
 name: password_manager
-description: "A new Flutter project."
+description: "SecureVault - Offline-first password manager with YubiKey authentication"
 publish_to: 'none'
 version: 1.0.0+1
 environment:
@@ -12,6 +12,34 @@ dependencies:
     sdk: flutter
   cupertino_icons: ^1.0.8
   intl: any
+  
+  # Security & Crypto
+  pointycastle: ^3.7.3
+  flutter_secure_storage: ^9.0.0
+  
+  # Database
+  sqflite: ^2.3.0
+  path: ^1.8.3
+  local_auth: ^2.1.6
+  
+  # State Management
+  provider: ^6.0.5
+  flutter_bloc: ^9.1.1
+  equatable: ^2.0.5
+  
+  # UI Components
+  pinput: ^3.0.1
+  flutter_svg: ^2.0.7
+  
+  # Utilities
+  path_provider: ^2.0.15
+  shared_preferences: ^2.2.2
+  uuid: ^4.2.1
+  sqflite_sqlcipher: ^3.4.0
+  
+  # YubiKey Integration (via platform channels)
+  # iOS: YubiKit via CocoaPods
+  # Android: YubiKit via Gradle
 
 dev_dependencies:
   flutter_test:

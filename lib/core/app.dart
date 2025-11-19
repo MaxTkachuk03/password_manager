@@ -1,4 +1,7 @@
 import 'package:flutter/material.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:password_manager/features/home/bloc/home_bloc.dart';
+import 'package:password_manager/features/home/presentation/home_page.dart';
 import 'package:password_manager/features/login/presentation/login_page.dart';
 
 class App extends StatefulWidget {
@@ -11,25 +14,28 @@ class App extends StatefulWidget {
 class _AppState extends State<App> {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      debugShowCheckedModeBanner: false,
-      title: 'Password Manager',
-      home: LoginPage(),
-      // theme: appThemeData,
-      // routerDelegate: _appRouter.delegate(
-      //   navigatorObservers: () => [
-      //     RouteObserverUtils(),
-      //     UxcamNavigationObserver(),
-      //     FirebaseNavigatorObserver(
-      //       analytics: _analytics,
-      //     ),
-      //     NavigatorObserver(),
-      //   ],
-      // ),
-      // routeInformationParser: _appRouter.defaultRouteParser(),
-      // localizationsDelegates: AppLocalizations.localizationsDelegates,
-      // supportedLocales: AppLocalizations.supportedLocales,
-      // locale: currentLocale,
+    return MultiBlocProvider(
+      providers: [BlocProvider(create: (context) => HomeBloc())],
+      child: MaterialApp(
+        debugShowCheckedModeBanner: false,
+        title: 'SecureVault',
+        home: HomePage(),
+        // theme: appThemeData,
+        // routerDelegate: _appRouter.delegate(
+        //   navigatorObservers: () => [
+        //     RouteObserverUtils(),
+        //     UxcamNavigationObserver(),
+        //     FirebaseNavigatorObserver(
+        //       analytics: _analytics,
+        //     ),
+        //     NavigatorObserver(),
+        //   ],
+        // ),
+        // routeInformationParser: _appRouter.defaultRouteParser(),
+        // localizationsDelegates: AppLocalizations.localizationsDelegates,
+        // supportedLocales: AppLocalizations.supportedLocales,
+        // locale: currentLocale,
+      ),
     );
   }
 }

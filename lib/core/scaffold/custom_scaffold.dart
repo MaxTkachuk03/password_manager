@@ -10,6 +10,7 @@ class CustomScaffold extends StatelessWidget {
     this.resizeToAvoidBottomInset,
     this.bottomSheet,
     this.appBar,
+    this.floatingActionButton,
   });
 
   final CustomAppBar? appBar;
@@ -17,6 +18,7 @@ class CustomScaffold extends StatelessWidget {
   final Color color;
   final bool? resizeToAvoidBottomInset;
   final Widget? bottomSheet;
+  final FloatingActionButton? floatingActionButton;
 
   factory CustomScaffold.blue({
     Key? key,
@@ -24,6 +26,7 @@ class CustomScaffold extends StatelessWidget {
     Widget? body,
     bool? resizeToAvoidBottomInset,
     Widget? bottomSheet,
+    FloatingActionButton? floatingActionButton,
   }) => CustomScaffold(
     appBar: appBar,
     color: AppColors.blueRegular,
@@ -31,6 +34,7 @@ class CustomScaffold extends StatelessWidget {
     resizeToAvoidBottomInset: resizeToAvoidBottomInset,
     key: key,
     bottomSheet: bottomSheet,
+    floatingActionButton: floatingActionButton,
   );
 
   factory CustomScaffold.green({
@@ -56,6 +60,7 @@ class CustomScaffold extends StatelessWidget {
       resizeToAvoidBottomInset: resizeToAvoidBottomInset,
       bottomSheet: bottomSheet,
       body: Stack(children: [if (body != null) body!]),
+      floatingActionButton: floatingActionButton,
     );
   }
 }
