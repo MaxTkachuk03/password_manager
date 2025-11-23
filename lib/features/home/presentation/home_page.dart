@@ -7,6 +7,7 @@ import 'package:password_manager/features/home/widgets/add_password_floating_but
 import 'package:password_manager/features/settings/presentation/settings_page.dart';
 import '../../../core/app_bar/custom_app_bar.dart';
 import '../../../core/scaffold/custom_scaffold.dart';
+import '../../../core/app.dart';
 import '../bloc/home_bloc.dart';
 import '../widgets/password_list_widget.dart';
 import '../widgets/search_bar_widget.dart';
@@ -17,7 +18,9 @@ import 'password_details_page.dart';
 import '../../login/presentation/login_page.dart';
 
 class HomePage extends StatefulWidget {
-  const HomePage({super.key});
+  final AppThemeNotifier? themeNotifier;
+  
+  const HomePage({super.key, this.themeNotifier});
 
   @override
   State<HomePage> createState() => _HomePageState();
@@ -58,33 +61,69 @@ class _HomePageState extends State<HomePage> {
         appBar: CustomAppBar.green(
           title: 'SecureVault',
           actions: [
+            BlocBuilder<HomeBloc, HomeState>(
+              builder: (context, state) {
+                if (state is HomeLoaded) {
+                  return IconButton(
+                    icon: Stack(
+                      children: [
+                        const Icon(Icons.sort),
+                        if (state.sortType != PasswordSortType.title || !state.sortAscending)
+                          Positioned(
+                            right: 0,
+                            top: 0,
+                            child: Container(
+                              width: 8,
+                              height: 8,
+                              decoration: const BoxDecoration(
+                                color: Colors.orange,
+                                shape: BoxShape.circle,
+                              ),
+                            ),
+                          ),
+                      ],
+                    ),
+                    tooltip: 'Сортування',
+                    onPressed: () => _showSortDialog(context, state),
+                  );
+                }
+                return const SizedBox.shrink();
+              },
+            ),
             IconButton(
               icon: const Icon(Icons.logout),
               onPressed: () => _showLogoutDialog(context),
             ),
             PopupMenuButton<String>(
+              iconColor: Colors.white, // Білий колір для іконки три крапки
               onSelected: (value) => _handleMenuAction(context, value),
               itemBuilder: (context) => [
-                const PopupMenuItem(
+                PopupMenuItem(
                   value: 'settings',
                   child: Row(
                     children: [
-                      Icon(Icons.settings),
-                      SizedBox(width: 8),
+                      Icon(
+                        Icons.settings,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
+                      const SizedBox(width: 8),
                       Text('Налаштування'),
                     ],
                   ),
                 ),
-              const PopupMenuItem(
-                value: 'backup',
-                child: Row(
-                  children: [
-                    Icon(Icons.backup),
-                    SizedBox(width: 8),
-                    Text('Резервна копія'),
-                  ],
+                PopupMenuItem(
+                  value: 'backup',
+                  child: Row(
+                    children: [
+                      Icon(
+                        Icons.backup,
+                        color: Theme.of(context).textTheme.bodyLarge?.color,
+                      ),
+                      const SizedBox(width: 8),
+                      Text('Резервна копія'),
+                    ],
+                  ),
                 ),
-              ),
               ],
             ),
           ],
@@ -199,7 +238,7 @@ class _HomePageState extends State<HomePage> {
       case 'settings':
         Navigator.of(context).push(
           MaterialPageRoute(
-            builder: (context) => const SettingsPage(),
+            builder: (context) => SettingsPage(themeNotifier: widget.themeNotifier),
           ),
         );
         break;
@@ -324,6 +363,150 @@ class _HomePageState extends State<HomePage> {
           ),
         ],
       ),
+    );
+  }
+
+  void _showSortDialog(BuildContext context, HomeLoaded state) {
+    PasswordSortType selectedSortType = state.sortType;
+    bool ascending = state.sortAscending;
+
+    showDialog(
+      context: context,
+      builder: (context) => StatefulBuilder(
+        builder: (context, setDialogState) => AlertDialog(
+          title: const Text('Сортування паролів'),
+          content: SingleChildScrollView(
+            child: Column(
+              mainAxisSize: MainAxisSize.min,
+              children: [
+                _buildSortOption(
+                  context,
+                  'За назвою',
+                  PasswordSortType.title,
+                  selectedSortType,
+                  (value) => setDialogState(() => selectedSortType = value),
+                ),
+                _buildSortOption(
+                  context,
+                  'За ім\'ям користувача',
+                  PasswordSortType.username,
+                  selectedSortType,
+                  (value) => setDialogState(() => selectedSortType = value),
+                ),
+                _buildSortOption(
+                  context,
+                  'За веб-сайтом',
+                  PasswordSortType.website,
+                  selectedSortType,
+                  (value) => setDialogState(() => selectedSortType = value),
+                ),
+                _buildSortOption(
+                  context,
+                  'За силою пароля',
+                  PasswordSortType.strength,
+                  selectedSortType,
+                  (value) => setDialogState(() => selectedSortType = value),
+                ),
+                _buildSortOption(
+                  context,
+                  'За датою створення',
+                  PasswordSortType.dateCreated,
+                  selectedSortType,
+                  (value) => setDialogState(() => selectedSortType = value),
+                ),
+                _buildSortOption(
+                  context,
+                  'За датою оновлення',
+                  PasswordSortType.dateUpdated,
+                  selectedSortType,
+                  (value) => setDialogState(() => selectedSortType = value),
+                ),
+                _buildSortOption(
+                  context,
+                  'За улюбленими',
+                  PasswordSortType.favorite,
+                  selectedSortType,
+                  (value) => setDialogState(() => selectedSortType = value),
+                ),
+                const Divider(height: 24),
+                Row(
+                  children: [
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => setDialogState(() => ascending = true),
+                        icon: Icon(
+                          Icons.arrow_upward,
+                          size: 18,
+                          color: ascending ? Theme.of(context).primaryColor : Colors.grey,
+                        ),
+                        label: const Text('За зростанням'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: ascending ? Theme.of(context).primaryColor : Colors.grey,
+                          side: BorderSide(
+                            color: ascending ? Theme.of(context).primaryColor : Colors.grey,
+                          ),
+                        ),
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Expanded(
+                      child: OutlinedButton.icon(
+                        onPressed: () => setDialogState(() => ascending = false),
+                        icon: Icon(
+                          Icons.arrow_downward,
+                          size: 18,
+                          color: !ascending ? Theme.of(context).primaryColor : Colors.grey,
+                        ),
+                        label: const Text('За спаданням'),
+                        style: OutlinedButton.styleFrom(
+                          foregroundColor: !ascending ? Theme.of(context).primaryColor : Colors.grey,
+                          side: BorderSide(
+                            color: !ascending ? Theme.of(context).primaryColor : Colors.grey,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.of(context).pop(),
+              child: const Text('Скасувати'),
+            ),
+            ElevatedButton(
+              onPressed: () {
+                context.read<HomeBloc>().add(SortPasswords(selectedSortType, ascending));
+                Navigator.of(context).pop();
+              },
+              child: const Text('Застосувати'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSortOption(
+    BuildContext context,
+    String title,
+    PasswordSortType sortType,
+    PasswordSortType selectedSortType,
+    Function(PasswordSortType) onSelected,
+  ) {
+    return RadioListTile<PasswordSortType>(
+      title: Text(title),
+      value: sortType,
+      groupValue: selectedSortType,
+      onChanged: (value) {
+        if (value != null) {
+          onSelected(value);
+        }
+      },
+      dense: true,
+      contentPadding: EdgeInsets.zero,
     );
   }
 }

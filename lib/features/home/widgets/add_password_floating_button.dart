@@ -4,6 +4,7 @@ import 'package:file_picker/file_picker.dart';
 import 'package:password_manager/features/home/bloc/home_event.dart';
 import 'package:password_manager/features/home/bloc/home_state.dart';
 import 'package:password_manager/features/home/presentation/add_password_page.dart';
+import 'package:password_manager/core/theme/app_colors.dart';
 import '../bloc/home_bloc.dart';
 
 class AddPasswordFloatingButton extends StatefulWidget {
@@ -183,7 +184,7 @@ class _AddPasswordFloatingButtonState extends State<AddPasswordFloatingButton>
       margin: const EdgeInsets.all(16),
       child: FloatingActionButton.extended(
         onPressed: _handleMainButtonPress,
-        backgroundColor: Theme.of(context).primaryColor,
+        backgroundColor: AppColors.greenRegular, // Зелений колір для кнопки додавання
         foregroundColor: Colors.white,
         elevation: 8,
         shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),

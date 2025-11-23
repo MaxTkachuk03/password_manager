@@ -265,7 +265,7 @@ class _PasswordListWidgetState extends State<PasswordListWidget> {
       key: ValueKey(password.id),
       endActionPane: ActionPane(
         motion: const DrawerMotion(),
-        extentRatio: 0.25,
+        extentRatio: 0.3,
         children: [
           SlidableAction(
             onPressed: (_) {
@@ -275,7 +275,7 @@ class _PasswordListWidgetState extends State<PasswordListWidget> {
             backgroundColor: Colors.blue,
             foregroundColor: Colors.white,
             icon: Icons.edit,
-            label: 'Редагувати',
+            // label: 'Редагувати',
             borderRadius: BorderRadius.circular(12),
           ),
           SlidableAction(
@@ -286,7 +286,7 @@ class _PasswordListWidgetState extends State<PasswordListWidget> {
             backgroundColor: Colors.red,
             foregroundColor: Colors.white,
             icon: Icons.delete,
-            label: 'Видалити',
+            // label: 'Видалити',
             borderRadius: BorderRadius.circular(12),
           ),
         ],

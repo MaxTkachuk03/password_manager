@@ -5,11 +5,14 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:file_picker/file_picker.dart';
 import '../../../core/app_bar/custom_app_bar.dart';
 import '../../../core/scaffold/custom_scaffold.dart';
+import '../../../core/app.dart';
 import '../../home/bloc/home_bloc.dart';
 import '../../home/bloc/home_event.dart';
 
 class SettingsPage extends StatefulWidget {
-  const SettingsPage({super.key});
+  final AppThemeNotifier? themeNotifier;
+  
+  const SettingsPage({super.key, this.themeNotifier});
 
   @override
   State<SettingsPage> createState() => _SettingsPageState();
@@ -62,10 +65,13 @@ class _SettingsPageState extends State<SettingsPage> {
       body: ListView(
         padding: const EdgeInsets.all(16),
         children: [
+          _buildSectionTitle('Застосунок'),
+          _buildThemeSetting(),
+          const SizedBox(height: 24),
           _buildSectionTitle('Безпека'),
           _buildAutoLockSetting(),
           const SizedBox(height: 24),
-          _buildSectionTitle('Застосунок'),
+          _buildSectionTitle('Резервна копія'),
           _buildBackupRestoreSection(),
           const SizedBox(height: 24),
           _buildSectionTitle('Про застосунок'),
@@ -82,9 +88,60 @@ class _SettingsPageState extends State<SettingsPage> {
         title,
         style: Theme.of(context).textTheme.titleMedium?.copyWith(
               fontWeight: FontWeight.bold,
-              color: Colors.grey[700],
             ),
       ),
+    );
+  }
+
+  Widget _buildThemeSetting() {
+    // If themeNotifier is available, use it for real-time updates
+    if (widget.themeNotifier != null) {
+      return ListenableBuilder(
+        listenable: widget.themeNotifier!,
+        builder: (context, _) {
+          final isDarkMode = widget.themeNotifier!.isDarkMode;
+          return Card(
+            child: SwitchListTile(
+              title: const Text('Темна тема'),
+              subtitle: const Text('Увімкнути темний режим'),
+              secondary: Icon(isDarkMode ? Icons.dark_mode : Icons.light_mode),
+              value: isDarkMode,
+              onChanged: (value) {
+                widget.themeNotifier?.setDarkMode(value);
+              },
+            ),
+          );
+        },
+      );
+    }
+    
+    // Fallback: use SharedPreferences directly if themeNotifier is not available
+    return FutureBuilder<bool>(
+      future: SharedPreferences.getInstance().then((prefs) => prefs.getBool('dark_mode') ?? false),
+      builder: (context, snapshot) {
+        final isDarkMode = snapshot.data ?? false;
+        return Card(
+          child: SwitchListTile(
+            title: const Text('Темна тема'),
+            subtitle: const Text('Увімкнути темний режим'),
+            secondary: Icon(isDarkMode ? Icons.dark_mode : Icons.light_mode),
+            value: isDarkMode,
+            onChanged: (value) async {
+              final prefs = await SharedPreferences.getInstance();
+              await prefs.setBool('dark_mode', value);
+              // Show message to restart app
+              if (context.mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Перезапустіть застосунок для застосування теми'),
+                    duration: Duration(seconds: 2),
+                  ),
+                );
+              }
+            },
+          ),
+        );
+      },
     );
   }
 

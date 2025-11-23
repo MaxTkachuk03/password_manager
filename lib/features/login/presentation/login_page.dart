@@ -2,12 +2,15 @@ import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:password_manager/core/app_bar/custom_app_bar.dart';
 import 'package:password_manager/core/scaffold/custom_scaffold.dart';
+import 'package:password_manager/core/app.dart';
 import 'package:password_manager/features/authentication/bloc/authentication_bloc.dart';
 import 'package:password_manager/features/authentication/widgets/yubikey_status_widget.dart';
 import 'package:password_manager/features/home/presentation/home_page.dart';
 
 class LoginPage extends StatefulWidget {
-  const LoginPage({super.key});
+  final AppThemeNotifier? themeNotifier;
+  
+  const LoginPage({super.key, this.themeNotifier});
 
   @override
   State<LoginPage> createState() => _LoginPageState();
@@ -24,7 +27,7 @@ class _LoginPageState extends State<LoginPage> {
             // Navigate to home page after successful authentication
             Navigator.of(context).pushReplacement(
               MaterialPageRoute(
-                builder: (context) => const HomePage(),
+                builder: (context) => HomePage(themeNotifier: widget.themeNotifier),
               ),
             );
           }
