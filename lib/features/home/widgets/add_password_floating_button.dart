@@ -1,13 +1,17 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:file_picker/file_picker.dart';
 import 'package:password_manager/features/home/bloc/home_event.dart';
 import 'package:password_manager/features/home/bloc/home_state.dart';
+import 'package:password_manager/features/home/presentation/add_password_page.dart';
 import '../bloc/home_bloc.dart';
 
 class AddPasswordFloatingButton extends StatefulWidget {
+  final void Function() onPressed;
+  
   const AddPasswordFloatingButton({
     Key? key,
-    required void Function() onPressed,
+    required this.onPressed,
   }) : super(key: key);
 
   @override
@@ -54,6 +58,16 @@ class _AddPasswordFloatingButtonState extends State<AddPasswordFloatingButton>
         _animationController.reverse();
       }
     });
+  }
+
+  void _handleMainButtonPress() {
+    if (_isExpanded) {
+      // If expanded, just collapse
+      _toggleExpanded();
+    } else {
+      // If not expanded, open add password form
+      widget.onPressed();
+    }
   }
 
   @override
@@ -168,7 +182,7 @@ class _AddPasswordFloatingButtonState extends State<AddPasswordFloatingButton>
     return Container(
       margin: const EdgeInsets.all(16),
       child: FloatingActionButton.extended(
-        onPressed: _toggleExpanded,
+        onPressed: _handleMainButtonPress,
         backgroundColor: Theme.of(context).primaryColor,
         foregroundColor: Colors.white,
         elevation: 8,
@@ -397,8 +411,11 @@ class _PasswordGeneratorDialogState extends State<PasswordGeneratorDialog> {
 
   void _addPasswordWithGenerated() {
     Navigator.of(context).pop();
-    ScaffoldMessenger.of(context).showSnackBar(
-      const SnackBar(content: Text('Відкриття форми додавання пароля...')),
+    // Navigate to AddPasswordPage
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => const AddPasswordPage(),
+      ),
     );
   }
 }
@@ -509,14 +526,28 @@ class ImportDialog extends StatelessWidget {
     );
   }
 
-  void _importFromCSV(BuildContext context) {
+  void _importFromCSV(BuildContext context) async {
     Navigator.of(context).pop();
-    context.read<HomeBloc>().add(ImportPasswords('csv'));
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['csv'],
+    );
+    
+    if (result != null && result.files.single.path != null) {
+      context.read<HomeBloc>().add(ImportPasswords(result.files.single.path!));
+    }
   }
 
-  void _importFromJSON(BuildContext context) {
+  void _importFromJSON(BuildContext context) async {
     Navigator.of(context).pop();
-    context.read<HomeBloc>().add(ImportPasswords('json'));
+    final result = await FilePicker.platform.pickFiles(
+      type: FileType.custom,
+      allowedExtensions: ['json'],
+    );
+    
+    if (result != null && result.files.single.path != null) {
+      context.read<HomeBloc>().add(ImportPasswords(result.files.single.path!));
+    }
   }
 
   void _importFrom1Password(BuildContext context) {
@@ -628,11 +659,15 @@ class ExportDialog extends StatelessWidget {
 
   void _exportToCSV(BuildContext context) {
     Navigator.of(context).pop();
-    context.read<HomeBloc>().add(ExportPasswords('csv'));
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Text('Експорт в CSV буде доступний у майбутніх версіях'),
+      ),
+    );
   }
 
   void _exportToJSON(BuildContext context) {
     Navigator.of(context).pop();
-    context.read<HomeBloc>().add(ExportPasswords('json'));
+    context.read<HomeBloc>().add(const ExportPasswords());
   }
 }

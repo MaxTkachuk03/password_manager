@@ -143,54 +143,54 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
               ],
             ),
           ),
-          _buildSearchSuggestions(),
+          // _buildSearchSuggestions(),
         ],
       ),
     );
   }
 
-  Widget _buildSearchSuggestions() {
-    return BlocBuilder<HomeBloc, HomeState>(
-      builder: (context, state) {
-        if (state is HomeLoaded && state.searchQuery.isNotEmpty) {
-          final suggestions = _getSearchSuggestions(state.searchQuery);
+  // Widget _buildSearchSuggestions() {
+  //   return BlocBuilder<HomeBloc, HomeState>(
+  //     builder: (context, state) {
+  //       if (state is HomeLoaded && state.searchQuery.isNotEmpty) {
+  //         final suggestions = _getSearchSuggestions(state.searchQuery);
 
-          if (suggestions.isEmpty) {
-            return const Padding(
-              padding: EdgeInsets.all(16),
-              child: Text(
-                'Нічого не знайдено',
-                style: TextStyle(color: Colors.grey),
-              ),
-            );
-          }
+  //         if (suggestions.isEmpty) {
+  //           return const Padding(
+  //             padding: EdgeInsets.all(16),
+  //             child: Text(
+  //               'Нічого не знайдено',
+  //               style: TextStyle(color: Colors.grey),
+  //             ),
+  //           );
+  //         }
 
-          return Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                child: Text(
-                  'Швидкі фільтри:',
-                  style: TextStyle(
-                    fontSize: 12,
-                    color: Colors.grey,
-                    fontWeight: FontWeight.w500,
-                  ),
-                ),
-              ),
-              ...suggestions.map(
-                (suggestion) => _buildSuggestionChip(suggestion),
-              ),
-              const SizedBox(height: 8),
-            ],
-          );
-        }
+  //         return Column(
+  //           crossAxisAlignment: CrossAxisAlignment.start,
+  //           children: [
+  //             const Padding(
+  //               padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+  //               child: Text(
+  //                 'Швидкі фільтри:',
+  //                 style: TextStyle(
+  //                   fontSize: 12,
+  //                   color: Colors.grey,
+  //                   fontWeight: FontWeight.w500,
+  //                 ),
+  //               ),
+  //             ),
+  //             ...suggestions.map(
+  //               (suggestion) => _buildSuggestionChip(suggestion),
+  //             ),
+  //             const SizedBox(height: 8),
+  //           ],
+  //         );
+  //       }
 
-        return const SizedBox.shrink();
-      },
-    );
-  }
+  //       return const SizedBox.shrink();
+  //     },
+  //   );
+  // }
 
   List<String> _getSearchSuggestions(String query) {
     final suggestions = <String>[];

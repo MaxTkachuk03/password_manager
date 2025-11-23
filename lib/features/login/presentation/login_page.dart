@@ -4,6 +4,7 @@ import 'package:password_manager/core/app_bar/custom_app_bar.dart';
 import 'package:password_manager/core/scaffold/custom_scaffold.dart';
 import 'package:password_manager/features/authentication/bloc/authentication_bloc.dart';
 import 'package:password_manager/features/authentication/widgets/yubikey_status_widget.dart';
+import 'package:password_manager/features/home/presentation/home_page.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
@@ -15,26 +16,37 @@ class LoginPage extends StatefulWidget {
 class _LoginPageState extends State<LoginPage> {
   @override
   Widget build(BuildContext context) {
-    return CustomScaffold.blue(
-      appBar: CustomAppBar.green(
-        title: 'Login',
-        bottom: PreferredSize(preferredSize: Size(100, 10), child: Text("lohhhh"))
-      ),
-      body: BlocProvider(
-        create: (context) => AuthenticationBloc()..add(CheckYubiKeyConnection()),
-        child: Column(
-          children: [
-            const YubiKeyStatusWidget(),
-            Expanded(
-              child: Center(
-                child: BlocBuilder<AuthenticationBloc, AuthenticationState>(
-                  builder: (context, state) {
-                    return _buildAuthenticationButtons(context, state);
-                  },
+    return BlocProvider(
+      create: (context) => AuthenticationBloc()..add(CheckYubiKeyConnection()),
+      child: BlocListener<AuthenticationBloc, AuthenticationState>(
+        listener: (context, state) {
+          if (state is AuthenticationSuccess) {
+            // Navigate to home page after successful authentication
+            Navigator.of(context).pushReplacement(
+              MaterialPageRoute(
+                builder: (context) => const HomePage(),
+              ),
+            );
+          }
+        },
+        child: CustomScaffold.blue(
+          appBar: CustomAppBar.green(
+            title: 'Вхід',
+          ),
+          body: Column(
+            children: [
+              const YubiKeyStatusWidget(),
+              Expanded(
+                child: Center(
+                  child: BlocBuilder<AuthenticationBloc, AuthenticationState>(
+                    builder: (context, state) {
+                      return _buildAuthenticationButtons(context, state);
+                    },
+                  ),
                 ),
               ),
-            ),
-          ],
+            ],
+          ),
         ),
       ),
     );

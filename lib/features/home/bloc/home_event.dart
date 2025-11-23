@@ -44,6 +44,15 @@ class DeletePassword extends HomeEvent {
   List<Object?> get props => [passwordId];
 }
 
+class RestorePassword extends HomeEvent {
+  final Password password;
+
+  const RestorePassword(this.password);
+
+  @override
+  List<Object?> get props => [password];
+}
+
 class ToggleFavoritePassword extends HomeEvent {
   final String passwordId;
 
@@ -109,7 +118,7 @@ class DeleteCategory extends HomeEvent {
 }
 
 class ExportPasswords extends HomeEvent {
-  const ExportPasswords(String s);
+  const ExportPasswords();
 }
 
 class ImportPasswords extends HomeEvent {

@@ -2,6 +2,15 @@
 	"version": "2.0.0",
 	"tasks": [
 		{
+			"label": "Prepare Device for Launch",
+			"type": "shell",
+			"command": "${workspaceFolder}/.vscode/select_device.sh",
+			"args": [
+				"${input:deviceSelection}"
+			],
+			"problemMatcher": []
+		},
+		{
 			"label": "Start IOS Emulator",
 			"type": "shell",
 			"command": "flutter emulators --launch apple_ios_simulator && sleep 10",
@@ -12,7 +21,7 @@
 			"label": "Start Android Emulator",
 			"type": "shell",
 			"command": "flutter emulators --launch Pixel_8_API_35",
-			"isBackground": true, // <-- Вказує, що це фоновий процес
+			"isBackground": true,
 			"problemMatcher": [
 				{
 					"owner": "flutter",
@@ -24,8 +33,6 @@
 							"message": 1
 						}
 					],
-					// Цей блок каже VS Code чекати, доки не з'явиться
-					// рядок "Emulator... started" у консолі
 					"background": {
 						"activeOnStart": true,
 						"beginsPattern": "Waiting for emulator to start...",

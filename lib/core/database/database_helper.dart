@@ -5,7 +5,7 @@ import 'package:path/path.dart';
 
 class DatabaseHelper {
   static const String _databaseName = 'password_manager.db';
-  static const int _databaseVersion = 1;
+  static const int _databaseVersion = 2;
 
   // Table names
   static const String passwordsTable = 'passwords';
@@ -93,8 +93,12 @@ class DatabaseHelper {
 
   static Future<void> _onUpgrade(Database db, int oldVersion, int newVersion) async {
     // Handle database upgrades if needed
-    if (oldVersion < newVersion) {
-      // Add migration logic here
+    if (oldVersion < 2) {
+      // Version 2: Fix column names and date formats
+      // Drop and recreate tables with correct schema
+      await db.execute('DROP TABLE IF EXISTS $passwordsTable');
+      await db.execute('DROP TABLE IF EXISTS $categoriesTable');
+      await _onCreate(db, newVersion);
     }
   }
 

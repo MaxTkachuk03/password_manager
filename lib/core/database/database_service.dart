@@ -1,4 +1,8 @@
 import 'dart:async';
+import 'dart:convert';
+import 'dart:io';
+import 'dart:math';
+import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'database_helper.dart';
 import '../../features/home/models/password_model.dart';
@@ -367,9 +371,101 @@ class DatabaseService {
     }
   }
 
-  Future exportPasswords(String filePath) async {}
+  Future<String> exportPasswords() async {
+    try {
+      final exportData = await DatabaseHelper.exportData();
+      final jsonString = jsonEncode(exportData);
+      
+      // Get appropriate directory for mobile platforms
+      Directory directory;
+      try {
+        if (Platform.isAndroid) {
+          // Try to use Downloads directory on Android
+          final downloadsDir = Directory('/storage/emulated/0/Download');
+          if (await downloadsDir.exists()) {
+            directory = downloadsDir;
+          } else {
+            // Fallback to external storage
+            final externalDir = await getExternalStorageDirectory();
+            directory = externalDir ?? await getApplicationDocumentsDirectory();
+          }
+        } else if (Platform.isIOS) {
+          // For iOS, use documents directory (accessible via Files app)
+          directory = await getApplicationDocumentsDirectory();
+        } else {
+          // Desktop fallback
+          directory = await getApplicationDocumentsDirectory();
+        }
+      } catch (e) {
+        // Fallback to application documents
+        directory = await getApplicationDocumentsDirectory();
+      }
+      
+      final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').split('.')[0];
+      final fileName = 'securevault_backup_$timestamp.json';
+      final filePath = '${directory.path}/$fileName';
+      
+      final file = File(filePath);
+      await file.writeAsString(jsonString);
+      
+      return file.path;
+    } catch (e) {
+      throw DatabaseException('Failed to export passwords: $e');
+    }
+  }
 
-  Future generatePassword({required int length, required bool includeUppercase, required bool includeLowercase, required bool includeNumbers, required bool includeSymbols}) async {}
+  Future<int> importPasswords(String filePath) async {
+    try {
+      final file = File(filePath);
+      if (!await file.exists()) {
+        throw DatabaseException('File not found: $filePath');
+      }
+      
+      final jsonString = await file.readAsString();
+      final data = jsonDecode(jsonString) as Map<String, dynamic>;
+      
+      await DatabaseHelper.importData(data);
+      
+      // Count imported items
+      final passwords = await getAllPasswords();
+      return passwords.length;
+    } catch (e) {
+      throw DatabaseException('Failed to import passwords: $e');
+    }
+  }
+
+  Future<String> generatePassword({
+    required int length,
+    required bool includeUppercase,
+    required bool includeLowercase,
+    required bool includeNumbers,
+    required bool includeSymbols,
+  }) async {
+    const String uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const String lowercase = 'abcdefghijklmnopqrstuvwxyz';
+    const String numbers = '0123456789';
+    const String symbols = '!@#\$%^&*()_+-=[]{}|;:,.<>?';
+
+    String chars = '';
+    if (includeUppercase) chars += uppercase;
+    if (includeLowercase) chars += lowercase;
+    if (includeNumbers) chars += numbers;
+    if (includeSymbols) chars += symbols;
+
+    if (chars.isEmpty) {
+      throw DatabaseException('Потрібно вибрати хоча б один тип символів');
+    }
+
+    final random = Random.secure();
+    final password = StringBuffer();
+    
+    for (int i = 0; i < length; i++) {
+      final index = random.nextInt(chars.length);
+      password.write(chars[index]);
+    }
+
+    return password.toString();
+  }
 }
 
 class DatabaseException implements Exception {

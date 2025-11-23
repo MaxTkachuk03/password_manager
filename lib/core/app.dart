@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:password_manager/features/home/bloc/home_bloc.dart';
-import 'package:password_manager/features/home/presentation/home_page.dart';
 import 'package:password_manager/features/login/presentation/login_page.dart';
 
 class App extends StatefulWidget {
@@ -19,7 +18,7 @@ class _AppState extends State<App> {
       child: MaterialApp(
         debugShowCheckedModeBanner: false,
         title: 'SecureVault',
-        home: HomePage(),
+        home: LoginPage(),
         // theme: appThemeData,
         // routerDelegate: _appRouter.delegate(
         //   navigatorObservers: () => [

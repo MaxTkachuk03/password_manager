@@ -1,8 +1,34 @@
 {
     "version": "0.2.0",
+    "inputs": [
+        {
+            "id": "deviceSelection",
+            "type": "pickString",
+            "description": "Виберіть пристрій для запуску",
+            "options": [
+                {
+                    "label": "📱 Активний пристрій (поточний)",
+                    "value": "active"
+                },
+                {
+                    "label": "🤖 Android Emulator",
+                    "value": "android"
+                },
+                {
+                    "label": "🍎 iOS Simulator",
+                    "value": "ios"
+                }
+            ]
+        }
+    ],
     "configurations": [
         {
-            // ✅ Універсальний запуск для Android
+            "name": "🚀 Debug (Select Device)",
+            "request": "launch",
+            "type": "dart",
+            "preLaunchTask": "Prepare Device for Launch"
+        },
+        {
             "name": "Launch Android",
             "request": "launch",
             "type": "dart",
@@ -10,15 +36,12 @@
             "deviceId": "emulator-5554"
         },
         {
-            // ✅ Універсальний запуск для iOS
             "name": "Launch iOS",
             "request": "launch",
             "type": "dart",
             "preLaunchTask": "Start IOS Emulator"
         },
         {
-            // Цей запустить на тому пристрої,
-            // який зараз обраний у статус-барі VS Code
             "name": "password_manager (Active Device)",
             "request": "launch",
             "type": "dart"

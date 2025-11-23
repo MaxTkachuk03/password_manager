@@ -19,11 +19,12 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     on<AddPassword>(_onAddPassword);
     on<UpdatePassword>(_onUpdatePassword);
     on<DeletePassword>(_onDeletePassword);
+    on<RestorePassword>(_onRestorePassword);
     on<ToggleFavoritePassword>(_onToggleFavoritePassword);
     on<SearchPasswords>(_onSearchPasswords);
     on<FilterByCategory>(_onFilterByCategory);
     on<SortPasswords>(_onSortPasswords);
-    // on<ExportPasswords>(_onExportPasswords);
+    on<ExportPasswords>(_onExportPasswords);
     on<ImportPasswords>(_onImportPasswords);
     on<GeneratePassword>(_onGeneratePassword);
     on<CheckPasswordStrength>(_onCheckPasswordStrength);
@@ -138,8 +139,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         sortType: _sortType,
         sortAscending: _sortAscending,
       ));
-      
-      emit(PasswordUpdated(updatedPassword));
     } catch (e) {
       emit(HomeError('Помилка оновлення пароля: ${e.toString()}'));
     }
@@ -172,6 +171,31 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }
   }
 
+  Future<void> _onRestorePassword(
+    RestorePassword event,
+    Emitter<HomeState> emit,
+  ) async {
+    try {
+      await _databaseService.addPassword(event.password);
+      
+      final passwords = await _databaseService.getAllPasswords();
+      final categories = await _databaseService.getAllCategories();
+      final filteredPasswords = _getFilteredPasswords(passwords);
+      
+      emit(HomeLoaded(
+        passwords: filteredPasswords,
+        categories: categories,
+        filteredPasswords: filteredPasswords,
+        searchQuery: _searchQuery,
+        selectedCategoryId: _selectedCategoryId,
+        sortType: _sortType,
+        sortAscending: _sortAscending,
+      ));
+    } catch (e) {
+      emit(HomeError('Помилка відновлення пароля: ${e.toString()}'));
+    }
+  }
+
   Future<void> _onToggleFavoritePassword(
     ToggleFavoritePassword event,
     Emitter<HomeState> emit,
@@ -199,8 +223,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         sortType: _sortType,
         sortAscending: _sortAscending,
       ));
-      
-      emit(PasswordToggledFavorite(event.passwordId, updatedPassword.isFavorite));
     } catch (e) {
       emit(HomeError('Помилка змни улюбленого пароля: ${e.toString()}'));
     }
@@ -279,24 +301,39 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }
   }
 
-  // Future<void> _onExportPasswords(
-  //   ExportPasswords event,
-  //   Emitter<HomeState> emit,
-  // ) async {
-  //   try {
-  //     final filePath = await _databaseService.exportPasswords(event.passwords);
-  //     emit(PasswordsExported(filePath));
-  //   } catch (e) {
-  //     emit(HomeError('Помилка експорту паролів: ${e.toString()}'));
-  //   }
-  // }
+  Future<void> _onExportPasswords(
+    ExportPasswords event,
+    Emitter<HomeState> emit,
+  ) async {
+    try {
+      final filePath = await _databaseService.exportPasswords();
+      emit(PasswordsExported(filePath));
+      
+      // Reload data to return to HomeLoaded state
+      final passwords = await _databaseService.getAllPasswords();
+      final categories = await _databaseService.getAllCategories();
+      final filteredPasswords = _getFilteredPasswords(passwords);
+      
+      emit(HomeLoaded(
+        passwords: filteredPasswords,
+        categories: categories,
+        filteredPasswords: filteredPasswords,
+        searchQuery: _searchQuery,
+        selectedCategoryId: _selectedCategoryId,
+        sortType: _sortType,
+        sortAscending: _sortAscending,
+      ));
+    } catch (e) {
+      emit(HomeError('Помилка експорту паролів: ${e.toString()}'));
+    }
+  }
 
   Future<void> _onImportPasswords(
     ImportPasswords event,
     Emitter<HomeState> emit,
   ) async {
     try {
-      final count = await _databaseService.exportPasswords(event.filePath);
+      final count = await _databaseService.importPasswords(event.filePath);
       emit(PasswordsImported(count));
       
       add(LoadPasswords());
@@ -412,7 +449,9 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
     }
     
     // Apply category filter
-    if (_selectedCategoryId != 'All') {
+    if (_selectedCategoryId == 'Favorites') {
+      filtered = filtered.where((password) => password.isFavorite).toList();
+    } else if (_selectedCategoryId != 'All') {
       filtered = filtered.where((password) => password.categoryId == _selectedCategoryId).toList();
     }
     

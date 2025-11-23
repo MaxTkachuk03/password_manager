@@ -49,24 +49,68 @@ class Category extends Equatable {
       'id': id,
       'name': name,
       'description': description,
-      'color': color.value,
-      'icon': icon.codePoint,
-      'passwordCount': passwordCount,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
+      'color': color.value.toString(), // Store as String for TEXT column
+      'icon': icon.codePoint.toString(), // Store as String for TEXT column
+      'password_count': passwordCount,
+      'created_at': createdAt.millisecondsSinceEpoch,
+      'updated_at': updatedAt.millisecondsSinceEpoch,
     };
   }
 
   factory Category.fromMap(Map<String, dynamic> map) {
+    // Handle both old format (ISO8601 strings) and new format (milliseconds)
+    DateTime parseDateTime(dynamic value) {
+      if (value is int) {
+        return DateTime.fromMillisecondsSinceEpoch(value);
+      } else if (value is String) {
+        return DateTime.parse(value);
+      } else {
+        return DateTime.now();
+      }
+    }
+
+    // Parse color - handle both int and String
+    int parseColor(dynamic value) {
+      if (value is int) {
+        return value;
+      } else if (value is String) {
+        return int.tryParse(value) ?? Colors.grey.value;
+      } else {
+        return Colors.grey.value;
+      }
+    }
+
+    // Parse icon - handle both int and String
+    int parseIcon(dynamic value) {
+      if (value is int) {
+        return value;
+      } else if (value is String) {
+        return int.tryParse(value) ?? Icons.category.codePoint;
+      } else {
+        return Icons.category.codePoint;
+      }
+    }
+
+    // Parse passwordCount - handle both int and String
+    int parsePasswordCount(dynamic value) {
+      if (value is int) {
+        return value;
+      } else if (value is String) {
+        return int.tryParse(value) ?? 0;
+      } else {
+        return 0;
+      }
+    }
+
     return Category(
-      id: map['id'],
-      name: map['name'],
-      description: map['description'] ?? '',
-      color: Color(map['color']),
-      icon: IconData(map['icon'], fontFamily: 'MaterialIcons'),
-      passwordCount: map['passwordCount'] ?? 0,
-      createdAt: DateTime.parse(map['createdAt']),
-      updatedAt: DateTime.parse(map['updatedAt']),
+      id: map['id']?.toString() ?? '',
+      name: map['name']?.toString() ?? '',
+      description: map['description']?.toString() ?? '',
+      color: Color(parseColor(map['color'])),
+      icon: IconData(parseIcon(map['icon']), fontFamily: 'MaterialIcons'),
+      passwordCount: parsePasswordCount(map['password_count'] ?? map['passwordCount']),
+      createdAt: parseDateTime(map['created_at'] ?? map['createdAt']),
+      updatedAt: parseDateTime(map['updated_at'] ?? map['updatedAt']),
     );
   }
 

@@ -30,24 +30,38 @@ class CategoryFilterWidget extends StatelessWidget {
     
     return ListView.builder(
       scrollDirection: Axis.horizontal,
-      itemCount: categoryNames.length,
+      itemCount: categoryNames.length + 1, // +1 for Favorites
       itemBuilder: (context, index) {
-        final categoryName = categoryNames[index];
-        final categoryId = categoryName == 'All' 
-            ? 'All' 
-            : PredefinedCategories.getIdByName(categoryName);
-        final isSelected = categoryId == selectedCategoryId;
-        
-        if (categoryName == 'All') {
+        // First item is "All"
+        if (index == 0) {
+          final isSelected = 'All' == selectedCategoryId;
           return _buildCategoryChip(
             context,
-            categoryName,
+            'All',
             Icons.apps,
             Colors.grey,
             isSelected,
             () => _selectCategory(context, 'All'),
           );
         }
+        
+        // Second item is "Favorites"
+        if (index == 1) {
+          final isSelected = 'Favorites' == selectedCategoryId;
+          return _buildCategoryChip(
+            context,
+            'Улюблені',
+            Icons.favorite,
+            Colors.red,
+            isSelected,
+            () => _selectCategory(context, 'Favorites'),
+          );
+        }
+        
+        // Rest are categories
+        final categoryName = categoryNames[index - 1];
+        final categoryId = PredefinedCategories.getIdByName(categoryName);
+        final isSelected = categoryId == selectedCategoryId;
         
         final category = PredefinedCategories.getCategoryById(categoryId);
         if (category == null) return const SizedBox.shrink();

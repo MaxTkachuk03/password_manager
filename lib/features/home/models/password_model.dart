@@ -68,28 +68,63 @@ class Password extends Equatable {
       'password': password,
       'website': website,
       'notes': notes,
-      'categoryId': categoryId,
-      'createdAt': createdAt.toIso8601String(),
-      'updatedAt': updatedAt.toIso8601String(),
-      'isFavorite': isFavorite ? 1 : 0,
+      'category_id': categoryId,
+      'created_at': createdAt.millisecondsSinceEpoch,
+      'updated_at': updatedAt.millisecondsSinceEpoch,
+      'is_favorite': isFavorite ? 1 : 0,
       'strength': strength,
       'tags': tags.join(','),
     };
   }
 
   factory Password.fromMap(Map<String, dynamic> map) {
+    // Handle both old format (ISO8601 strings) and new format (milliseconds)
+    DateTime parseDateTime(dynamic value) {
+      if (value is int) {
+        return DateTime.fromMillisecondsSinceEpoch(value);
+      } else if (value is String) {
+        return DateTime.parse(value);
+      } else {
+        return DateTime.now();
+      }
+    }
+
+    // Parse isFavorite - handle both int and String
+    bool parseIsFavorite(dynamic value) {
+      if (value is int) {
+        return value == 1;
+      } else if (value is String) {
+        return value == '1' || value.toLowerCase() == 'true';
+      } else if (value is bool) {
+        return value;
+      } else {
+        return false;
+      }
+    }
+
+    // Parse strength - handle both int and String
+    int parseStrength(dynamic value) {
+      if (value is int) {
+        return value;
+      } else if (value is String) {
+        return int.tryParse(value) ?? 0;
+      } else {
+        return 0;
+      }
+    }
+
     return Password(
-      id: map['id'],
-      title: map['title'],
-      username: map['username'],
-      password: map['password'],
-      website: map['website'],
+      id: map['id'] ?? '',
+      title: map['title'] ?? '',
+      username: map['username'] ?? '',
+      password: map['password'] ?? '',
+      website: map['website'] ?? '',
       notes: map['notes'] ?? '',
-      categoryId: map['categoryId'],
-      createdAt: DateTime.parse(map['createdAt']),
-      updatedAt: DateTime.parse(map['updatedAt']),
-      isFavorite: (map['isFavorite'] ?? 0) == 1,
-      strength: map['strength'] ?? 0,
+      categoryId: map['category_id'] ?? map['categoryId'] ?? '',
+      createdAt: parseDateTime(map['created_at'] ?? map['createdAt']),
+      updatedAt: parseDateTime(map['updated_at'] ?? map['updatedAt']),
+      isFavorite: parseIsFavorite(map['is_favorite'] ?? map['isFavorite']),
+      strength: parseStrength(map['strength']),
       tags: (map['tags'] as String? ?? '').split(',').where((tag) => tag.isNotEmpty).toList(),
     );
   }

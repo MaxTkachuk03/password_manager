@@ -1,37 +1,85 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
+import 'package:flutter_slidable/flutter_slidable.dart';
 import 'package:password_manager/features/home/bloc/home_event.dart';
 import 'package:password_manager/features/home/bloc/home_state.dart';
 import 'package:password_manager/features/home/models/category_model.dart';
 import '../bloc/home_bloc.dart';
 import '../models/password_model.dart';
+import '../presentation/edit_password_page.dart';
 import 'password_item_widget.dart';
 
-class PasswordListWidget extends StatelessWidget {
-  const PasswordListWidget({Key? key, required List<Password> passwords, required void Function(dynamic password) onPasswordDelete, required void Function(dynamic password) onPasswordEdit, required void Function(dynamic password) onPasswordTap}) : super(key: key);
+class PasswordListWidget extends StatefulWidget {
+  final List<Password> passwords;
+  final void Function(dynamic password) onPasswordDelete;
+  final void Function(dynamic password) onPasswordEdit;
+  final void Function(dynamic password) onPasswordTap;
+
+  const PasswordListWidget({
+    Key? key,
+    required this.passwords,
+    required this.onPasswordDelete,
+    required this.onPasswordEdit,
+    required this.onPasswordTap,
+  }) : super(key: key);
+
+  @override
+  State<PasswordListWidget> createState() => _PasswordListWidgetState();
+}
+
+class _PasswordListWidgetState extends State<PasswordListWidget> {
+  final GlobalKey<RefreshIndicatorState> _refreshIndicatorKey = GlobalKey<RefreshIndicatorState>();
+  bool _isRefreshing = false;
+  HomeLoaded? _lastState;
 
   @override
   Widget build(BuildContext context) {
-    return BlocBuilder<HomeBloc, HomeState>(
-      builder: (context, state) {
-        if (state is HomeLoading) {
-          return _buildLoadingState();
+    return BlocListener<HomeBloc, HomeState>(
+      listener: (context, state) {
+        if (state is HomeLoading && _isRefreshing) {
+          // Don't do anything, we're already refreshing
+        } else if (state is HomeLoaded && _isRefreshing) {
+          // Refresh completed
+          Future.delayed(const Duration(milliseconds: 100), () {
+            if (mounted) {
+              setState(() {
+                _isRefreshing = false;
+              });
+            }
+          });
         }
-        
-        if (state is HomeError) {
-          return _buildErrorState(context, state.message);
-        }
-        
-        if (state is HomeLoaded) {
-          if (state.filteredPasswords.isEmpty) {
-            return _buildEmptyState(context, state);
+      },
+      child: BlocBuilder<HomeBloc, HomeState>(
+        builder: (context, state) {
+          if (state is HomeLoading && !_isRefreshing) {
+            return _buildLoadingState();
           }
           
-          return _buildPasswordList(context, state);
-        }
-        
-        return const SizedBox.shrink();
-      },
+          if (state is HomeError) {
+            return _buildErrorState(context, state.message);
+          }
+          
+          if (state is HomeLoaded) {
+            _lastState = state;
+            if (state.filteredPasswords.isEmpty) {
+              return _buildEmptyState(context, state);
+            }
+            
+            return _buildPasswordList(context, state);
+          }
+          
+          // If we have a previous state, show it
+          if (_lastState != null) {
+            if (_lastState!.filteredPasswords.isEmpty) {
+              return _buildEmptyState(context, _lastState!);
+            }
+            return _buildPasswordList(context, _lastState!);
+          }
+          
+          return const SizedBox.shrink();
+        },
+      ),
     );
   }
 
@@ -95,6 +143,7 @@ class PasswordListWidget extends StatelessWidget {
   Widget _buildEmptyState(BuildContext context, HomeLoaded state) {
     final hasSearchQuery = state.searchQuery.isNotEmpty;
     final hasCategoryFilter = state.selectedCategoryId != 'All';
+    final isFavoritesFilter = state.selectedCategoryId == 'Favorites';
     
     return Center(
       child: Padding(
@@ -102,56 +151,62 @@ class PasswordListWidget extends StatelessWidget {
         child: Column(
           mainAxisAlignment: MainAxisAlignment.center,
           children: [
-            Icon(
-              hasSearchQuery || hasCategoryFilter
-                  ? Icons.search_off
-                  : Icons.lock_open,
-              size: 64,
-              color: Colors.grey.shade400,
-            ),
-            const SizedBox(height: 16),
-            Text(
-              hasSearchQuery || hasCategoryFilter
-                  ? 'Нічого не знайдено'
-                  : 'Немає паролів',
-              style: TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.grey.shade600,
+            AnimatedSwitcher(
+              duration: const Duration(milliseconds: 300),
+              child: Icon(
+                isFavoritesFilter
+                    ? Icons.favorite_border_rounded
+                    : hasSearchQuery || hasCategoryFilter
+                        ? Icons.search_off_rounded
+                        : Icons.lock_open_rounded,
+                key: ValueKey('${hasSearchQuery}_${hasCategoryFilter}_$isFavoritesFilter'),
+                size: 80,
+                color: isFavoritesFilter ? Colors.red.shade300 : Colors.grey.shade400,
               ),
             ),
-            const SizedBox(height: 8),
+            const SizedBox(height: 24),
             Text(
-              hasSearchQuery || hasCategoryFilter
-                  ? 'Спробуйте змінити фільтри пошуку'
-                  : 'Додайте ваш перший пароль для початку',
+              isFavoritesFilter
+                  ? 'Немає улюблених паролів'
+                  : hasSearchQuery || hasCategoryFilter
+                      ? 'Нічого не знайдено'
+                      : 'Немає паролів',
               style: TextStyle(
-                fontSize: 14,
-                color: Colors.grey.shade500,
+                fontSize: 22,
+                fontWeight: FontWeight.w600,
+                color: Colors.grey.shade700,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Text(
+              isFavoritesFilter
+                  ? 'Додайте паролі в улюблені, натиснувши на іконку сердечка'
+                  : hasSearchQuery || hasCategoryFilter
+                      ? 'Спробуйте змінити фільтри пошуку або очистити їх'
+                      : 'Додайте ваш перший пароль, щоб почати зберігати їх безпечно',
+              style: TextStyle(
+                fontSize: 15,
+                color: Colors.grey.shade600,
+                height: 1.4,
               ),
               textAlign: TextAlign.center,
             ),
-            if (!hasSearchQuery && !hasCategoryFilter) ...[
-              const SizedBox(height: 24),
+            if (hasSearchQuery || hasCategoryFilter) ...[
+              const SizedBox(height: 32),
               ElevatedButton.icon(
-                onPressed: () => _showAddPasswordDialog(context),
-                icon: const Icon(Icons.add),
-                label: const Text('Додати пароль'),
+                onPressed: () {
+                  HapticFeedback.lightImpact();
+                  _clearFilters(context);
+                },
+                icon: const Icon(Icons.clear_all),
+                label: const Text('Очистити фільтри'),
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Theme.of(context).primaryColor,
                   foregroundColor: Colors.white,
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-              ),
-            ],
-            if (hasSearchQuery || hasCategoryFilter) ...[
-              const SizedBox(height: 24),
-              OutlinedButton.icon(
-                onPressed: () => _clearFilters(context),
-                icon: const Icon(Icons.clear),
-                label: const Text('Очистити фільтри'),
-                style: OutlinedButton.styleFrom(
-                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
                 ),
               ),
             ],
@@ -162,23 +217,95 @@ class PasswordListWidget extends StatelessWidget {
   }
 
   Widget _buildPasswordList(BuildContext context, HomeLoaded state) {
-    return RefreshIndicator(
-      onRefresh: () async {
-        context.read<HomeBloc>().add(LoadPasswords());
+    return NotificationListener<ScrollNotification>(
+      onNotification: (notification) {
+        // Prevent RefreshIndicator from triggering on programmatic scroll
+        if (notification is ScrollUpdateNotification && _isRefreshing) {
+          return true;
+        }
+        return false;
       },
-      child: ListView.builder(
-        padding: const EdgeInsets.symmetric(vertical: 8),
-        itemCount: state.filteredPasswords.length,
-        itemBuilder: (context, index) {
-          final password = state.filteredPasswords[index];
-          return PasswordItemWidget(
-            password: password,
-            onTap: () => _showPasswordDetails(context, password),
-            onEdit: () => _editPassword(context, password),
-            onDelete: () => _deletePassword(context, password),
-            onCopyPassword: () => _copyPassword(context, password.password),
-            onCopyUsername: () => _copyPassword(context, password.username),
-          );
+      child: RefreshIndicator(
+        key: _refreshIndicatorKey,
+        onRefresh: () async {
+          if (_isRefreshing) {
+            return;
+          }
+          setState(() {
+            _isRefreshing = true;
+          });
+          try {
+            HapticFeedback.lightImpact();
+            context.read<HomeBloc>().add(LoadPasswords());
+            // Wait for the state to update
+            await Future.delayed(const Duration(milliseconds: 800));
+          } finally {
+            if (mounted) {
+              setState(() {
+                _isRefreshing = false;
+              });
+            }
+          }
+        },
+        child: ListView.builder(
+          key: PageStorageKey('password_list'),
+          padding: const EdgeInsets.symmetric(vertical: 8),
+          itemCount: state.filteredPasswords.length,
+          itemBuilder: (context, index) {
+            final password = state.filteredPasswords[index];
+            return _buildSlidablePasswordItem(context, password);
+          },
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSlidablePasswordItem(BuildContext context, Password password) {
+    return Slidable(
+      key: ValueKey(password.id),
+      endActionPane: ActionPane(
+        motion: const DrawerMotion(),
+        extentRatio: 0.25,
+        children: [
+          SlidableAction(
+            onPressed: (_) {
+              HapticFeedback.mediumImpact();
+              _editPassword(context, password);
+            },
+            backgroundColor: Colors.blue,
+            foregroundColor: Colors.white,
+            icon: Icons.edit,
+            label: 'Редагувати',
+            borderRadius: BorderRadius.circular(12),
+          ),
+          SlidableAction(
+            onPressed: (_) {
+              HapticFeedback.heavyImpact();
+              _deletePasswordWithUndo(context, password);
+            },
+            backgroundColor: Colors.red,
+            foregroundColor: Colors.white,
+            icon: Icons.delete,
+            label: 'Видалити',
+            borderRadius: BorderRadius.circular(12),
+          ),
+        ],
+      ),
+      child: PasswordItemWidget(
+        password: password,
+        onTap: () {
+          HapticFeedback.selectionClick();
+          _showPasswordDetails(context, password);
+        },
+        onEdit: () => _editPassword(context, password),
+        onDelete: () => _deletePasswordWithUndo(context, password),
+        onCopyPassword: () {
+          HapticFeedback.lightImpact();
+          _copyPassword(context, password.password);
+        },
+        onCopyUsername: () {
+          HapticFeedback.lightImpact();
+          _copyPassword(context, password.username);
         },
       ),
     );
@@ -193,42 +320,40 @@ class PasswordListWidget extends StatelessWidget {
 
   void _editPassword(BuildContext context, Password password) {
     // Navigate to edit password screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Редагування: ${password.title}'),
-        duration: const Duration(seconds: 2),
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (context) => EditPasswordPage(password: password),
       ),
     );
   }
 
-  void _deletePassword(BuildContext context, Password password) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: const Text('Видалити пароль?'),
-        content: Text(
-          'Ви впевнені, що хочете видалити пароль для "${password.title}"? Цю дію неможливо скасувати.',
+  void _deletePasswordWithUndo(BuildContext context, Password password) {
+    final passwordToRestore = password;
+    
+    // Delete password
+    context.read<HomeBloc>().add(DeletePassword(password.id));
+    
+    // Show undo snackbar
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Пароль "${password.title}" видалено'),
+        duration: const Duration(seconds: 4),
+        action: SnackBarAction(
+          label: 'Скасувати',
+          textColor: Colors.white,
+          onPressed: () {
+            HapticFeedback.lightImpact();
+            // Restore password
+            context.read<HomeBloc>().add(RestorePassword(passwordToRestore));
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('Пароль "${password.title}" відновлено'),
+                backgroundColor: Colors.green,
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          },
         ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(context).pop(),
-            child: const Text('Скасувати'),
-          ),
-          TextButton(
-            onPressed: () {
-              Navigator.of(context).pop();
-              context.read<HomeBloc>().add(DeletePassword(password.id));
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Пароль "${password.title}" видалено'),
-                  duration: const Duration(seconds: 2),
-                ),
-              );
-            },
-            style: TextButton.styleFrom(foregroundColor: Colors.red),
-            child: const Text('Видалити'),
-          ),
-        ],
       ),
     );
   }
@@ -238,16 +363,6 @@ class PasswordListWidget extends StatelessWidget {
     ScaffoldMessenger.of(context).showSnackBar(
       SnackBar(
         content: Text('Скопійовано: ${text.substring(0, text.length > 20 ? 20 : text.length)}...'),
-        duration: const Duration(seconds: 2),
-      ),
-    );
-  }
-
-  void _showAddPasswordDialog(BuildContext context) {
-    // Navigate to add password screen
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: const Text('Відкриття форми додавання пароля...'),
         duration: const Duration(seconds: 2),
       ),
     );

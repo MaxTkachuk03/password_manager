@@ -26,7 +26,7 @@ class PasswordItemWidget extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     final category = PredefinedCategories.getCategoryById(password.categoryId);
-    
+
     return Container(
       margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 6),
       decoration: BoxDecoration(
@@ -55,7 +55,10 @@ class PasswordItemWidget extends StatelessWidget {
                 const SizedBox(height: 12),
                 _buildTitleAndWebsite(),
                 const SizedBox(height: 8),
-                _buildUsername(),
+                if (password.username.isNotEmpty) ...[
+                  const SizedBox(height: 8),
+                  _buildUsername(),
+                ],
                 if (password.notes.isNotEmpty) ...[
                   const SizedBox(height: 8),
                   _buildNotes(),
@@ -80,11 +83,7 @@ class PasswordItemWidget extends StatelessWidget {
               color: category.color.withOpacity(0.1),
               borderRadius: BorderRadius.circular(8),
             ),
-            child: Icon(
-              category.icon,
-              size: 16,
-              color: category.color,
-            ),
+            child: Icon(category.icon, size: 16, color: category.color),
           ),
           const SizedBox(width: 8),
         ],
@@ -120,8 +119,8 @@ class PasswordItemWidget extends StatelessWidget {
           height: 16,
           margin: const EdgeInsets.only(right: 2),
           decoration: BoxDecoration(
-            color: index < password.strength 
-                ? password.strengthColor 
+            color: index < password.strength
+                ? password.strengthColor
                 : Colors.grey.shade300,
             borderRadius: BorderRadius.circular(2),
           ),
@@ -136,8 +135,8 @@ class PasswordItemWidget extends StatelessWidget {
       child: Container(
         padding: const EdgeInsets.all(4),
         decoration: BoxDecoration(
-          color: password.isFavorite 
-              ? Colors.red.withOpacity(0.1) 
+          color: password.isFavorite
+              ? Colors.red.withOpacity(0.1)
               : Colors.grey.withOpacity(0.1),
           borderRadius: BorderRadius.circular(6),
         ),
@@ -172,11 +171,7 @@ class PasswordItemWidget extends StatelessWidget {
                 const SizedBox(height: 2),
                 Row(
                   children: [
-                    Icon(
-                      Icons.link,
-                      size: 12,
-                      color: Colors.grey.shade600,
-                    ),
+                    Icon(Icons.link, size: 12, color: Colors.grey.shade600),
                     const SizedBox(width: 4),
                     Expanded(
                       child: Text(
@@ -203,19 +198,12 @@ class PasswordItemWidget extends StatelessWidget {
   Widget _buildUsername() {
     return Row(
       children: [
-        Icon(
-          Icons.person,
-          size: 14,
-          color: Colors.grey.shade600,
-        ),
+        Icon(Icons.person, size: 14, color: Colors.grey.shade600),
         const SizedBox(width: 6),
         Expanded(
           child: Text(
             password.username,
-            style: TextStyle(
-              fontSize: 14,
-              color: Colors.grey.shade700,
-            ),
+            style: TextStyle(fontSize: 14, color: Colors.grey.shade700),
             maxLines: 1,
             overflow: TextOverflow.ellipsis,
           ),
@@ -246,11 +234,7 @@ class PasswordItemWidget extends StatelessWidget {
       child: Row(
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
-          Icon(
-            Icons.note,
-            size: 14,
-            color: Colors.grey.shade600,
-          ),
+          Icon(Icons.note, size: 14, color: Colors.grey.shade600),
           const SizedBox(width: 6),
           Expanded(
             child: Text(
@@ -275,34 +259,21 @@ class PasswordItemWidget extends StatelessWidget {
       children: [
         if (onCopyPassword != null)
           _buildActionButton(
-            Icons.key,
+            Icons.content_copy,
             'Копіювати пароль',
             onCopyPassword!,
             Colors.blue,
           ),
-        if (onEdit != null) ...[
-          const SizedBox(width: 4),
-          _buildActionButton(
-            Icons.edit,
-            'Редагувати',
-            onEdit!,
-            Colors.green,
-          ),
-        ],
-        if (onDelete != null) ...[
-          const SizedBox(width: 4),
-          _buildActionButton(
-            Icons.delete,
-            'Видалити',
-            onDelete!,
-            Colors.red,
-          ),
-        ],
       ],
     );
   }
 
-  Widget _buildActionButton(IconData icon, String tooltip, VoidCallback onTap, Color color) {
+  Widget _buildActionButton(
+    IconData icon,
+    String tooltip,
+    VoidCallback onTap,
+    Color color,
+  ) {
     return Tooltip(
       message: tooltip,
       child: GestureDetector(
@@ -313,11 +284,7 @@ class PasswordItemWidget extends StatelessWidget {
             color: color.withOpacity(0.1),
             borderRadius: BorderRadius.circular(6),
           ),
-          child: Icon(
-            icon,
-            size: 14,
-            color: color,
-          ),
+          child: Icon(icon, size: 14, color: color),
         ),
       ),
     );
@@ -326,16 +293,13 @@ class PasswordItemWidget extends StatelessWidget {
   Widget _buildFooter(BuildContext context) {
     return Row(
       mainAxisAlignment: MainAxisAlignment.spaceBetween,
-      children: [
-        _buildTags(),
-        _buildTimestamp(),
-      ],
+      children: [_buildTags(), _buildTimestamp()],
     );
   }
 
   Widget _buildTags() {
     if (password.tags.isEmpty) return const SizedBox.shrink();
-    
+
     return Row(
       children: password.tags.take(3).map((tag) {
         return Container(
@@ -361,7 +325,7 @@ class PasswordItemWidget extends StatelessWidget {
   Widget _buildTimestamp() {
     final now = DateTime.now();
     final difference = now.difference(password.updatedAt);
-    
+
     String timeText;
     if (difference.inDays > 0) {
       timeText = '${difference.inDays} днів тому';
@@ -372,13 +336,10 @@ class PasswordItemWidget extends StatelessWidget {
     } else {
       timeText = 'Щойно';
     }
-    
+
     return Text(
       'Оновлено: $timeText',
-      style: TextStyle(
-        fontSize: 10,
-        color: Colors.grey.shade500,
-      ),
+      style: TextStyle(fontSize: 10, color: Colors.grey.shade500),
     );
   }
 
