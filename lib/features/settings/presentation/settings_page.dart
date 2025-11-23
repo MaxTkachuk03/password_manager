@@ -8,6 +8,7 @@ import '../../../core/scaffold/custom_scaffold.dart';
 import '../../../core/app.dart';
 import '../../home/bloc/home_bloc.dart';
 import '../../home/bloc/home_event.dart';
+import '../../home/bloc/home_state.dart';
 
 class SettingsPage extends StatefulWidget {
   final AppThemeNotifier? themeNotifier;
@@ -171,60 +172,104 @@ class _SettingsPageState extends State<SettingsPage> {
   }
 
   Widget _buildBackupRestoreSection() {
-    return Card(
-      child: Column(
-        children: [
-          ListTile(
-            title: const Text('Резервна копія'),
-            subtitle: const Text('Створити резервну копію всіх паролів'),
-            leading: const Icon(Icons.backup),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () {
-              context.read<HomeBloc>().add(const ExportPasswords());
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('Створення резервної копії...'),
-                ),
-              );
-            },
-          ),
-          const Divider(height: 1),
-          ListTile(
-            title: const Text('Відновити'),
-            subtitle: const Text('Відновити паролі з резервної копії'),
-            leading: const Icon(Icons.restore),
-            trailing: const Icon(Icons.chevron_right),
-            onTap: () async {
-              try {
-                final result = await FilePicker.platform.pickFiles(
-                  type: FileType.custom,
-                  allowedExtensions: ['json'],
+    return BlocListener<HomeBloc, HomeState>(
+      listener: (context, state) {
+        if (state is HomeError) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(state.message),
+              backgroundColor: Colors.red,
+              duration: const Duration(seconds: 5),
+            ),
+          );
+        }
+      },
+      child: Card(
+        child: Column(
+          children: [
+            ListTile(
+              title: const Text('Резервна копія'),
+              subtitle: const Text('Створити зашифровану резервну копію всіх паролів'),
+              leading: const Icon(Icons.backup),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () {
+                context.read<HomeBloc>().add(const ExportPasswords());
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Створення зашифрованої резервної копії...'),
+                  ),
                 );
-                
-                if (result != null && result.files.single.path != null) {
-                  context.read<HomeBloc>().add(
-                    ImportPasswords(result.files.single.path!),
+              },
+            ),
+            const Divider(height: 1),
+            ListTile(
+              title: const Text('Відновити'),
+              subtitle: const Text('Завантажити файл .encrypted та відновити паролі'),
+              leading: const Icon(Icons.restore),
+              trailing: const Icon(Icons.chevron_right),
+              onTap: () async {
+                try {
+                  final result = await FilePicker.platform.pickFiles(
+                    type: FileType.any,
+                    allowMultiple: false,
+                    dialogTitle: 'Виберіть файл резервної копії (.encrypted)',
+                    withData: false,
+                    withReadStream: false,
                   );
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Text('Відновлення паролів...'),
-                    ),
-                  );
+                  
+                  if (result != null && result.files.single.path != null) {
+                    final filePath = result.files.single.path!;
+                    final fileName = result.files.single.name.toLowerCase();
+                    
+                    // Check if file has supported extension
+                    final supportedExtensions = ['.encrypted', '.json', '.txt'];
+                    final hasSupportedExtension = supportedExtensions.any(
+                      (ext) => fileName.endsWith(ext),
+                    );
+                    
+                    if (!hasSupportedExtension) {
+                      if (mounted) {
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          const SnackBar(
+                            content: Text('Будь ласка, виберіть файл з розширенням .encrypted або .json'),
+                            backgroundColor: Colors.orange,
+                            duration: Duration(seconds: 3),
+                          ),
+                        );
+                      }
+                      return;
+                    }
+                    
+                    if (context.mounted) {
+                      // Show loading message
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Завантаження та розшифрування файлу...'),
+                          duration: Duration(seconds: 2),
+                        ),
+                      );
+                      
+                      // Import passwords (will automatically decrypt if encrypted)
+                      context.read<HomeBloc>().add(
+                        ImportPasswords(filePath),
+                      );
+                    }
+                  }
+                } catch (e) {
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Помилка вибору файлу: $e\nБудь ласка, перезапустіть застосунок.'),
+                        backgroundColor: Colors.red,
+                        duration: const Duration(seconds: 5),
+                      ),
+                    );
+                  }
                 }
-              } catch (e) {
-                if (mounted) {
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    SnackBar(
-                      content: Text('Помилка вибору файлу: $e\nБудь ласка, перезапустіть застосунок.'),
-                      backgroundColor: Colors.red,
-                      duration: const Duration(seconds: 5),
-                    ),
-                  );
-                }
-              }
-            },
-          ),
-        ],
+              },
+            ),
+          ],
+        ),
       ),
     );
   }

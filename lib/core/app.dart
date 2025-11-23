@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:password_manager/features/home/bloc/home_bloc.dart';
 import 'package:password_manager/features/login/presentation/login_page.dart';
 import 'package:password_manager/core/theme/app_theme.dart';
+import 'package:password_manager/core/security/app_lock_service.dart';
 
 class AppThemeNotifier extends ChangeNotifier {
   bool _isDarkMode = false;
@@ -40,13 +41,42 @@ class App extends StatefulWidget {
   State<App> createState() => _AppState();
 }
 
-class _AppState extends State<App> {
+class _AppState extends State<App> with WidgetsBindingObserver {
   final AppThemeNotifier _themeNotifier = AppThemeNotifier();
+  final AppLockService _lockService = AppLockService();
+
+  @override
+  void initState() {
+    super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _lockService.initialize();
+    _checkLockStatus();
+  }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _themeNotifier.dispose();
+    _lockService.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _lockService.updateActiveTime();
+    } else if (state == AppLifecycleState.resumed) {
+      _checkLockStatus();
+    }
+  }
+
+  Future<void> _checkLockStatus() async {
+    if (_lockService.isLocked) {
+      // When app is locked, logout user and show login page
+      // Reset lock service state
+      _lockService.updateActiveTime();
+    }
   }
 
   @override

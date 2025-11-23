@@ -13,10 +13,7 @@ import '../../../core/theme/app_colors.dart';
 class EditPasswordPage extends StatefulWidget {
   final Password password;
 
-  const EditPasswordPage({
-    super.key,
-    required this.password,
-  });
+  const EditPasswordPage({super.key, required this.password});
 
   @override
   State<EditPasswordPage> createState() => _EditPasswordPageState();
@@ -29,7 +26,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
   late final TextEditingController _passwordController;
   late final TextEditingController _websiteController;
   late final TextEditingController _notesController;
-  
+
   late String _selectedCategoryId;
   bool _obscurePassword = true;
   int _passwordStrength = 0;
@@ -47,7 +44,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
     _notesController = TextEditingController(text: widget.password.notes);
     _selectedCategoryId = widget.password.categoryId;
     _passwordStrength = widget.password.strength;
-    
+
     context.read<HomeBloc>().add(LoadCategories());
     _passwordController.addListener(_updatePasswordStrength);
   }
@@ -67,7 +64,9 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
     setState(() {
       _passwordStrength = Password.calculateStrength(_passwordController.text);
     });
-    context.read<HomeBloc>().add(CheckPasswordStrength(_passwordController.text));
+    context.read<HomeBloc>().add(
+      CheckPasswordStrength(_passwordController.text),
+    );
   }
 
   void _generatePassword() {
@@ -112,7 +111,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
         updatedAt: DateTime.now(),
         strength: _passwordStrength,
       );
-      
+
       context.read<HomeBloc>().add(UpdatePassword(updatedPassword));
     }
   }
@@ -126,10 +125,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
             _isUpdating = false;
           });
           ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text(state.message),
-              backgroundColor: Colors.red,
-            ),
+            SnackBar(content: Text(state.message), backgroundColor: Colors.red),
           );
         } else if (state is PasswordGenerated) {
           setState(() {
@@ -159,8 +155,9 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
       child: CustomScaffold.blue(
         appBar: CustomAppBar.green(
           title: 'Редагувати пароль',
+          isNeedLeading: true,
           leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
+            icon: const Icon(Icons.arrow_back_ios_new),
             onPressed: () => Navigator.of(context).pop(),
           ),
         ),
@@ -171,12 +168,13 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
             }
 
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
               child: Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    const SizedBox(height: 8),
                     // Title field
                     TextFormField(
                       controller: _titleController,
@@ -222,13 +220,16 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                             // Show generate button when password is empty or always
                             IconButton(
                               icon: const Icon(Icons.autorenew),
-                              tooltip: 'Згенерувати пароль (довге натискання - налаштування)',
+                              tooltip:
+                                  'Згенерувати пароль (довге натискання - налаштування)',
                               onPressed: _generatePassword,
                               onLongPress: _showPasswordGeneratorDialog,
                             ),
                             IconButton(
                               icon: Icon(
-                                _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                                _obscurePassword
+                                    ? Icons.visibility
+                                    : Icons.visibility_off,
                               ),
                               onPressed: () {
                                 setState(() {
@@ -321,7 +322,10 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
                       ),
                       child: const Text(
                         'Оновити',
-                        style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
+                        style: TextStyle(
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
                       ),
                     ),
                   ],
@@ -345,10 +349,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
           children: [
             Text(
               'Сила пароля: ',
-              style: TextStyle(
-                fontSize: 12,
-                color: Colors.grey[600],
-              ),
+              style: TextStyle(fontSize: 12, color: Colors.grey[600]),
             ),
             Text(
               strengthText,
@@ -411,9 +412,7 @@ class _EditPasswordPageState extends State<EditPasswordPage> {
 class _PasswordGeneratorDialog extends StatefulWidget {
   final Function(String) onPasswordGenerated;
 
-  const _PasswordGeneratorDialog({
-    required this.onPasswordGenerated,
-  });
+  const _PasswordGeneratorDialog({required this.onPasswordGenerated});
 
   @override
   State<_PasswordGeneratorDialog> createState() =>
@@ -502,7 +501,9 @@ class _PasswordGeneratorDialogState extends State<_PasswordGeneratorDialog> {
                     ),
                     IconButton(
                       onPressed: () {
-                        Clipboard.setData(ClipboardData(text: _generatedPassword));
+                        Clipboard.setData(
+                          ClipboardData(text: _generatedPassword),
+                        );
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
                             content: Text('Пароль скопійовано!'),
@@ -586,4 +587,3 @@ class _PasswordGeneratorDialogState extends State<_PasswordGeneratorDialog> {
     );
   }
 }
-

@@ -11,7 +11,7 @@ import '../../../core/app_bar/custom_app_bar.dart';
 import '../../../core/theme/app_colors.dart';
 import 'edit_password_page.dart';
 
-class PasswordDetailsPage extends StatelessWidget {
+class PasswordDetailsPage extends StatefulWidget {
   final Password password;
 
   const PasswordDetailsPage({
@@ -20,29 +20,42 @@ class PasswordDetailsPage extends StatelessWidget {
   });
 
   @override
+  State<PasswordDetailsPage> createState() => _PasswordDetailsPageState();
+}
+
+class _PasswordDetailsPageState extends State<PasswordDetailsPage> {
+  bool _isDeleting = false;
+
+  @override
   Widget build(BuildContext context) {
     return BlocListener<HomeBloc, HomeState>(
       listener: (context, state) {
-        if (state is PasswordDeleted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('Пароль успішно видалено'),
-              backgroundColor: Colors.green,
-            ),
-          );
-          Navigator.of(context).pop();
-        } else if (state is HomeError) {
+        if (_isDeleting && state is HomeLoaded) {
+          // Check if password still exists
+          final passwordExists = state.passwords.any((p) => p.id == widget.password.id);
+          if (!passwordExists) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              const SnackBar(
+                content: Text('Пароль успішно видалено'),
+                backgroundColor: Colors.green,
+              ),
+            );
+            Navigator.of(context).pop();
+            _isDeleting = false;
+          }
+        } else if (state is HomeError && _isDeleting) {
           ScaffoldMessenger.of(context).showSnackBar(
             SnackBar(
               content: Text(state.message),
               backgroundColor: Colors.red,
             ),
           );
+          _isDeleting = false;
         }
       },
       child: CustomScaffold.blue(
         appBar: CustomAppBar.green(
-          title: password.title,
+          title: widget.password.title,
           leading: IconButton(
             icon: const Icon(Icons.arrow_back),
             onPressed: () => Navigator.of(context).pop(),
@@ -72,11 +85,11 @@ class PasswordDetailsPage extends StatelessWidget {
               _buildInfoCard(context),
               const SizedBox(height: 16),
               _PasswordCard(
-                password: password,
+                password: widget.password,
                 onCopyPassword: (text) => _copyToClipboard(context, text, 'Пароль'),
               ),
               const SizedBox(height: 16),
-              if (password.notes.isNotEmpty) ...[
+              if (widget.password.notes.isNotEmpty) ...[
                 _buildNotesCard(),
                 const SizedBox(height: 16),
               ],
@@ -91,7 +104,7 @@ class PasswordDetailsPage extends StatelessWidget {
   }
 
   Widget _buildCategoryCard(BuildContext context) {
-    final category = PredefinedCategories.getCategoryById(password.categoryId);
+    final category = PredefinedCategories.getCategoryById(widget.password.categoryId);
     
     return Card(
       child: Padding(
@@ -159,20 +172,20 @@ class PasswordDetailsPage extends StatelessWidget {
                   ),
                 ),
                 Text(
-                  password.strengthText,
+                  widget.password.strengthText,
                   style: TextStyle(
                     fontSize: 14,
                     fontWeight: FontWeight.bold,
-                    color: password.strengthColor,
+                    color: widget.password.strengthColor,
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             LinearProgressIndicator(
-              value: (password.strength + 1) / 6,
+              value: (widget.password.strength + 1) / 6,
               backgroundColor: Colors.grey[300],
-              valueColor: AlwaysStoppedAnimation<Color>(password.strengthColor),
+              valueColor: AlwaysStoppedAnimation<Color>(widget.password.strengthColor),
               minHeight: 8,
             ),
             const SizedBox(height: 8),
@@ -183,8 +196,8 @@ class PasswordDetailsPage extends StatelessWidget {
                     height: 4,
                     margin: EdgeInsets.only(right: index < 4 ? 4 : 0),
                     decoration: BoxDecoration(
-                      color: index < password.strength
-                          ? password.strengthColor
+                      color: index < widget.password.strength
+                          ? widget.password.strengthColor
                           : Colors.grey[300],
                       borderRadius: BorderRadius.circular(2),
                     ),
@@ -208,17 +221,17 @@ class PasswordDetailsPage extends StatelessWidget {
               context,
               icon: Icons.person,
               label: 'Ім\'я користувача',
-              value: password.username,
-              onCopy: () => _copyToClipboard(context, password.username, 'Ім\'я користувача'),
+              value: widget.password.username,
+              onCopy: () => _copyToClipboard(context, widget.password.username, 'Ім\'я користувача'),
             ),
             const Divider(height: 24),
             _buildInfoRow(
               context,
               icon: Icons.language,
               label: 'Веб-сайт',
-              value: password.website.isEmpty ? 'Не вказано' : password.website,
-              onCopy: password.website.isNotEmpty
-                  ? () => _copyToClipboard(context, password.website, 'Веб-сайт')
+              value: widget.password.website.isEmpty ? 'Не вказано' : widget.password.website,
+              onCopy: widget.password.website.isNotEmpty
+                  ? () => _copyToClipboard(context, widget.password.website, 'Веб-сайт')
                   : null,
             ),
           ],
@@ -293,7 +306,7 @@ class PasswordDetailsPage extends StatelessWidget {
             ),
             const SizedBox(height: 8),
             Text(
-              password.notes,
+              widget.password.notes,
               style: const TextStyle(
                 fontSize: 14,
                 height: 1.5,
@@ -313,14 +326,14 @@ class PasswordDetailsPage extends StatelessWidget {
           children: [
             _buildMetadataRow(
               'Створено',
-              _formatDateTime(password.createdAt),
+              _formatDateTime(widget.password.createdAt),
             ),
             const Divider(height: 16),
             _buildMetadataRow(
               'Оновлено',
-              _formatDateTime(password.updatedAt),
+              _formatDateTime(widget.password.updatedAt),
             ),
-            if (password.tags.isNotEmpty) ...[
+            if (widget.password.tags.isNotEmpty) ...[
               const Divider(height: 16),
               Row(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -336,7 +349,7 @@ class PasswordDetailsPage extends StatelessWidget {
                     child: Wrap(
                       spacing: 4,
                       runSpacing: 4,
-                      children: password.tags.map((tag) {
+                      children: widget.password.tags.map((tag) {
                         return Chip(
                           label: Text(tag),
                           labelStyle: const TextStyle(fontSize: 12),
@@ -396,7 +409,7 @@ class PasswordDetailsPage extends StatelessWidget {
         ),
         const SizedBox(height: 12),
         OutlinedButton.icon(
-          onPressed: () => _copyToClipboard(context, password.password, 'Пароль'),
+          onPressed: () => _copyToClipboard(context, widget.password.password, 'Пароль'),
           icon: const Icon(Icons.content_copy),
           label: const Text('Копіювати пароль'),
           style: OutlinedButton.styleFrom(
@@ -426,7 +439,7 @@ class PasswordDetailsPage extends StatelessWidget {
   void _editPassword(BuildContext context) {
     Navigator.of(context).push(
       MaterialPageRoute(
-        builder: (context) => EditPasswordPage(password: password),
+        builder: (context) => EditPasswordPage(password: widget.password),
       ),
     );
   }
@@ -436,7 +449,7 @@ class PasswordDetailsPage extends StatelessWidget {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Видалення пароля'),
-        content: Text('Ви впевнені, що хочете видалити пароль для "${password.title}"?'),
+        content: Text('Ви впевнені, що хочете видалити пароль для "${widget.password.title}"?'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),
@@ -445,7 +458,10 @@ class PasswordDetailsPage extends StatelessWidget {
           ElevatedButton(
             onPressed: () {
               Navigator.of(context).pop();
-              context.read<HomeBloc>().add(DeletePassword(password.id));
+              setState(() {
+                _isDeleting = true;
+              });
+              context.read<HomeBloc>().add(DeletePassword(widget.password.id));
             },
             style: ElevatedButton.styleFrom(
               backgroundColor: Colors.red,

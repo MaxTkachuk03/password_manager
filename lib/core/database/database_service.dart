@@ -5,6 +5,8 @@ import 'dart:math';
 import 'package:path_provider/path_provider.dart';
 import 'package:sqflite/sqflite.dart';
 import 'database_helper.dart';
+import '../encryption/encryption_service.dart';
+import '../security/master_password_service.dart';
 import '../../features/home/models/password_model.dart';
 import '../../features/home/models/category_model.dart';
 
@@ -376,6 +378,18 @@ class DatabaseService {
       final exportData = await DatabaseHelper.exportData();
       final jsonString = jsonEncode(exportData);
       
+      // Always encrypt with master password
+      final masterPasswordService = MasterPasswordService();
+      var masterPassword = await masterPasswordService.getMasterPassword();
+      
+      // Auto-generate master password if not set
+      if (masterPassword == null || masterPassword.isEmpty) {
+        masterPassword = await _generateAndStoreMasterPassword();
+      }
+      
+      // Encrypt with AES256-GCM
+      final encryptedContent = EncryptionService.encrypt(jsonString, masterPassword);
+      
       // Get appropriate directory for mobile platforms
       Directory directory;
       try {
@@ -402,11 +416,11 @@ class DatabaseService {
       }
       
       final timestamp = DateTime.now().toIso8601String().replaceAll(':', '-').split('.')[0];
-      final fileName = 'securevault_backup_$timestamp.json';
+      final fileName = 'securevault_backup_$timestamp.encrypted';
       final filePath = '${directory.path}/$fileName';
       
       final file = File(filePath);
-      await file.writeAsString(jsonString);
+      await file.writeAsString(encryptedContent);
       
       return file.path;
     } catch (e) {
@@ -421,7 +435,25 @@ class DatabaseService {
         throw DatabaseException('File not found: $filePath');
       }
       
-      final jsonString = await file.readAsString();
+      final fileContent = await file.readAsString();
+      String jsonString;
+      
+      // Check if file is encrypted
+      if (EncryptionService.isEncrypted(fileContent)) {
+        // Use master password for decryption
+        final masterPasswordService = MasterPasswordService();
+        final masterPassword = await masterPasswordService.getMasterPassword();
+        
+        if (masterPassword == null || masterPassword.isEmpty) {
+          throw DatabaseException('Master password not set. Cannot decrypt file. Please export a new backup first to generate master password.');
+        }
+        
+        jsonString = EncryptionService.decrypt(fileContent, masterPassword);
+      } else {
+        // Legacy unencrypted file support
+        jsonString = fileContent;
+      }
+      
       final data = jsonDecode(jsonString) as Map<String, dynamic>;
       
       await DatabaseHelper.importData(data);
@@ -430,7 +462,10 @@ class DatabaseService {
       final passwords = await getAllPasswords();
       return passwords.length;
     } catch (e) {
-      throw DatabaseException('Failed to import passwords: $e');
+      if (e is EncryptionException) {
+        throw DatabaseException(e.message);
+      }
+      throw DatabaseException('Failed to import passwords: ${e.toString()}');
     }
   }
 
@@ -465,6 +500,30 @@ class DatabaseService {
     }
 
     return password.toString();
+  }
+
+  /// Generate and store master password automatically
+  Future<String> _generateAndStoreMasterPassword() async {
+    // Generate a secure 32-character master password
+    const String uppercase = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ';
+    const String lowercase = 'abcdefghijklmnopqrstuvwxyz';
+    const String numbers = '0123456789';
+    const String symbols = '!@#\$%^&*()_+-=[]{}|;:,.<>?';
+    const String allChars = uppercase + lowercase + numbers + symbols;
+
+    final random = Random.secure();
+    final password = StringBuffer();
+    
+    for (int i = 0; i < 32; i++) {
+      final index = random.nextInt(allChars.length);
+      password.write(allChars[index]);
+    }
+
+    final masterPassword = password.toString();
+    final masterPasswordService = MasterPasswordService();
+    await masterPasswordService.setMasterPassword(masterPassword);
+    
+    return masterPassword;
   }
 }
 

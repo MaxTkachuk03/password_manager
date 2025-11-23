@@ -8,6 +8,7 @@ import 'package:password_manager/features/settings/presentation/settings_page.da
 import '../../../core/app_bar/custom_app_bar.dart';
 import '../../../core/scaffold/custom_scaffold.dart';
 import '../../../core/app.dart';
+import '../../../core/security/app_lock_service.dart';
 import '../bloc/home_bloc.dart';
 import '../widgets/password_list_widget.dart';
 import '../widgets/search_bar_widget.dart';
@@ -26,20 +27,51 @@ class HomePage extends StatefulWidget {
   State<HomePage> createState() => _HomePageState();
 }
 
-class _HomePageState extends State<HomePage> {
+class _HomePageState extends State<HomePage> with WidgetsBindingObserver {
   final TextEditingController _searchController = TextEditingController();
+  final AppLockService _lockService = AppLockService();
   String _selectedCategory = 'All';
 
   @override
   void initState() {
     super.initState();
+    WidgetsBinding.instance.addObserver(this);
+    _lockService.updateActiveTime();
     context.read<HomeBloc>().add(LoadPasswords());
   }
 
   @override
   void dispose() {
+    WidgetsBinding.instance.removeObserver(this);
     _searchController.dispose();
     super.dispose();
+  }
+
+  @override
+  void didChangeAppLifecycleState(AppLifecycleState state) {
+    super.didChangeAppLifecycleState(state);
+    if (state == AppLifecycleState.paused || state == AppLifecycleState.inactive) {
+      _lockService.updateActiveTime();
+    } else if (state == AppLifecycleState.resumed) {
+      _lockService.updateActiveTime();
+      // Check if app should be locked
+      if (_lockService.isLocked && mounted) {
+        // Logout user and return to login page
+        _logoutUser();
+      }
+    }
+  }
+
+  void _logoutUser() {
+    // Navigate to login page and clear navigation stack
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(
+        builder: (context) => LoginPage(themeNotifier: widget.themeNotifier),
+      ),
+      (route) => false,
+    );
+    // Reset lock service state
+    _lockService.updateActiveTime();
   }
 
   @override
@@ -253,7 +285,7 @@ class _HomePageState extends State<HomePage> {
       context: context,
       builder: (context) => AlertDialog(
         title: const Text('Резервна копія'),
-        content: const Text('Створити резервну копію всіх паролів у форматі JSON?'),
+        content: const Text('Створити зашифровану резервну копію всіх паролів? Файл буде зашифрований автоматично.'),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(context).pop(),

@@ -152,20 +152,24 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
             }
 
             return SingleChildScrollView(
-              padding: const EdgeInsets.all(16.0),
+              padding: const EdgeInsets.fromLTRB(16.0, 0.0, 16.0, 16.0),
               child: Form(
                 key: _formKey,
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
+                    const SizedBox(height: 8),
                     // Title field
                     TextFormField(
                       controller: _titleController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Назва *',
                         hintText: 'Наприклад: Gmail',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.title),
+                        border: const OutlineInputBorder(),
+                        prefixIcon: Icon(
+                          Icons.title,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                       ),
                       validator: (value) {
                         if (value == null || value.trim().isEmpty) {
@@ -179,11 +183,14 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
                     // Username field
                     TextFormField(
                       controller: _usernameController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Ім\'я користувача',
                         hintText: 'user@example.com',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.person),
+                        border: const OutlineInputBorder(),
+                        prefixIcon: Icon(
+                          Icons.person,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -196,12 +203,18 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
                         labelText: 'Пароль *',
                         hintText: 'Введіть пароль',
                         border: const OutlineInputBorder(),
-                        prefixIcon: const Icon(Icons.lock),
+                        prefixIcon: Icon(
+                          Icons.lock,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                         suffixIcon: Row(
                           mainAxisSize: MainAxisSize.min,
                           children: [
                             IconButton(
-                              icon: const Icon(Icons.autorenew),
+                              icon: Icon(
+                                Icons.autorenew,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                              ),
                               tooltip: 'Згенерувати пароль (довге натискання - налаштування)',
                               onPressed: _generatePassword,
                               onLongPress: _showPasswordGeneratorDialog,
@@ -209,6 +222,7 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
                             IconButton(
                               icon: Icon(
                                 _obscurePassword ? Icons.visibility : Icons.visibility_off,
+                                color: Theme.of(context).colorScheme.onSurfaceVariant,
                               ),
                               onPressed: () {
                                 setState(() {
@@ -236,11 +250,14 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
                     // Website field
                     TextFormField(
                       controller: _websiteController,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Веб-сайт',
                         hintText: 'https://example.com',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.language),
+                        border: const OutlineInputBorder(),
+                        prefixIcon: Icon(
+                          Icons.language,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 16),
@@ -251,10 +268,13 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
                         value: _categories.any((c) => c.id == _selectedCategoryId)
                             ? _selectedCategoryId
                             : _categories.first.id,
-                        decoration: const InputDecoration(
+                        decoration: InputDecoration(
                           labelText: 'Категорія',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.category),
+                          border: const OutlineInputBorder(),
+                          prefixIcon: Icon(
+                            Icons.category,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
                         ),
                         items: _categories.map((category) {
                           return DropdownMenuItem<String>(
@@ -277,11 +297,14 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
                         },
                       )
                     else
-                      const TextField(
+                      TextField(
                         decoration: InputDecoration(
                           labelText: 'Категорія',
-                          border: OutlineInputBorder(),
-                          prefixIcon: Icon(Icons.category),
+                          border: const OutlineInputBorder(),
+                          prefixIcon: Icon(
+                            Icons.category,
+                            color: Theme.of(context).colorScheme.onSurfaceVariant,
+                          ),
                           hintText: 'Завантаження...',
                         ),
                         enabled: false,
@@ -292,11 +315,14 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
                     TextFormField(
                       controller: _notesController,
                       maxLines: 3,
-                      decoration: const InputDecoration(
+                      decoration: InputDecoration(
                         labelText: 'Примітки',
                         hintText: 'Додаткові примітки...',
-                        border: OutlineInputBorder(),
-                        prefixIcon: Icon(Icons.note),
+                        border: const OutlineInputBorder(),
+                        prefixIcon: Icon(
+                          Icons.note,
+                          color: Theme.of(context).colorScheme.onSurfaceVariant,
+                        ),
                       ),
                     ),
                     const SizedBox(height: 24),
@@ -340,7 +366,7 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
               'Сила пароля: ',
               style: TextStyle(
                 fontSize: 12,
-                color: Colors.grey[600],
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
               ),
             ),
             Text(
@@ -356,7 +382,7 @@ class _AddPasswordPageState extends State<AddPasswordPage> {
         const SizedBox(height: 4),
         LinearProgressIndicator(
           value: (_passwordStrength + 1) / 6,
-          backgroundColor: Colors.grey[300],
+          backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
           valueColor: AlwaysStoppedAnimation<Color>(strengthColor),
           minHeight: 4,
         ),
@@ -475,9 +501,11 @@ class _PasswordGeneratorDialogState extends State<_PasswordGeneratorDialog> {
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
-                  color: Colors.grey.shade100,
+                  color: Theme.of(context).colorScheme.surfaceVariant,
                   borderRadius: BorderRadius.circular(8),
-                  border: Border.all(color: Colors.grey.shade300),
+                  border: Border.all(
+                    color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+                  ),
                 ),
                 child: Row(
                   children: [
@@ -555,7 +583,7 @@ class _PasswordGeneratorDialogState extends State<_PasswordGeneratorDialog> {
                       widget.onPasswordGenerated(_generatedPassword);
                     },
                     style: ElevatedButton.styleFrom(
-                      backgroundColor: Theme.of(context).primaryColor,
+                      backgroundColor: AppColors.greenRegular,
                       foregroundColor: Colors.white,
                     ),
                     child: const Text('Використати'),

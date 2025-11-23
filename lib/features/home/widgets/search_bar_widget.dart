@@ -1,7 +1,6 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_bloc/flutter_bloc.dart';
 import 'package:password_manager/features/home/bloc/home_event.dart';
-import 'package:password_manager/features/home/bloc/home_state.dart';
 import '../bloc/home_bloc.dart';
 
 class SearchBarWidget extends StatefulWidget {
@@ -66,10 +65,9 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
         decoration: BoxDecoration(
           color: Theme.of(context).cardColor,
           borderRadius: BorderRadius.circular(12),
-          border: Border.all(color: Theme.of(context).dividerColor),
           boxShadow: [
             BoxShadow(
-              color: Colors.black.withOpacity(0.05),
+              color: Theme.of(context).colorScheme.shadow.withOpacity(0.05),
               blurRadius: 10,
               offset: const Offset(0, 2),
             ),
@@ -77,16 +75,23 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
         ),
         child: Row(
           children: [
-            Icon(Icons.search, color: Colors.grey.shade600, size: 20),
+            Icon(
+              Icons.search,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
+              size: 20,
+            ),
             const SizedBox(width: 12),
             Text(
               'Пошук паролів...',
-              style: TextStyle(color: Colors.grey.shade600, fontSize: 16),
+              style: TextStyle(
+                color: Theme.of(context).colorScheme.onSurfaceVariant,
+                fontSize: 16,
+              ),
             ),
             const Spacer(),
             Icon(
               Icons.keyboard_arrow_down,
-              color: Colors.grey.shade600,
+              color: Theme.of(context).colorScheme.onSurfaceVariant,
               size: 20,
             ),
           ],
@@ -98,14 +103,11 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
   Widget _buildExpandedSearchBar() {
     return Container(
       decoration: BoxDecoration(
-        color: Colors.white,
+        color: Theme.of(context).colorScheme.surface,
         borderRadius: BorderRadius.circular(12),
-        border: Border.all(
-          color: Theme.of(context).primaryColor.withOpacity(0.3),
-        ),
         boxShadow: [
           BoxShadow(
-            color: Theme.of(context).primaryColor.withOpacity(0.1),
+            color: Theme.of(context).colorScheme.shadow.withOpacity(0.1),
             blurRadius: 15,
             offset: const Offset(0, 3),
           ),
@@ -119,26 +121,34 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
               children: [
                 Icon(
                   Icons.search,
-                  color: Theme.of(context).primaryColor,
+                  color: Theme.of(context).colorScheme.primary,
                   size: 20,
                 ),
                 const SizedBox(width: 12),
                 Expanded(
-                  child: TextField(
+                  child: TextFormField(
                     controller: _controller,
                     autofocus: true,
-                    decoration: const InputDecoration(
-                      hintText: 'Введіть текст для пошуку...',
+                    decoration: InputDecoration(
+                      fillColor: Theme.of(context).colorScheme.surface,
                       border: InputBorder.none,
-                      hintStyle: TextStyle(color: Colors.grey),
+                      enabledBorder: InputBorder.none,
+                      focusedBorder: InputBorder.none,
+                      hintText: 'Введіть текст для пошуку...',
+                      hintStyle: TextStyle(
+                        color: Theme.of(context).colorScheme.onSurfaceVariant,
+                      ),
                     ),
-                    style: const TextStyle(fontSize: 16),
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: Theme.of(context).colorScheme.onSurface,
+                    ),
                   ),
                 ),
                 IconButton(
                   onPressed: _toggleExpanded,
-                  icon: const Icon(Icons.close),
-                  color: Colors.grey.shade600,
+                  icon: Icon(Icons.close),
+                  color: Theme.of(context).colorScheme.onSurfaceVariant,
                 ),
               ],
             ),
@@ -225,8 +235,10 @@ class _SearchBarWidgetState extends State<SearchBarWidget> {
           _controller.text = suggestion;
           _onSearchChanged();
         },
-        backgroundColor: Colors.grey.shade100,
-        side: BorderSide(color: Colors.grey.shade300),
+        backgroundColor: Theme.of(context).colorScheme.surfaceVariant,
+        side: BorderSide(
+          color: Theme.of(context).colorScheme.outline.withOpacity(0.3),
+        ),
       ),
     );
   }

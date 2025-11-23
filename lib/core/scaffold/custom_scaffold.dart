@@ -58,7 +58,7 @@ class CustomScaffold extends StatelessWidget {
       appBar: appBar,
       backgroundColor: Theme.of(context).brightness == Brightness.dark
           ? Theme.of(context).scaffoldBackgroundColor
-          : color,
+          : Theme.of(context).scaffoldBackgroundColor,
       resizeToAvoidBottomInset: resizeToAvoidBottomInset,
       bottomSheet: bottomSheet,
       body: Stack(children: [if (body != null) body!]),

@@ -543,11 +543,24 @@ class ImportDialog extends StatelessWidget {
     Navigator.of(context).pop();
     final result = await FilePicker.platform.pickFiles(
       type: FileType.custom,
-      allowedExtensions: ['json'],
+      allowedExtensions: ['json', 'encrypted'],
     );
     
     if (result != null && result.files.single.path != null) {
-      context.read<HomeBloc>().add(ImportPasswords(result.files.single.path!));
+      try {
+        context.read<HomeBloc>().add(
+          ImportPasswords(result.files.single.path!),
+        );
+      } catch (e) {
+        if (context.mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text('Помилка: ${e.toString()}'),
+              backgroundColor: Colors.red,
+            ),
+          );
+        }
+      }
     }
   }
 

@@ -42,33 +42,48 @@ class AppTheme {
       ),
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
-        fillColor: Colors.white,
+        fillColor: const Color(0xFFF5F7FA),
+        contentPadding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+        isDense: false,
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        floatingLabelAlignment: FloatingLabelAlignment.start,
+        floatingLabelStyle: TextStyle(
+          height: 1.0,
+          color: AppColors.blueDarker,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
+        labelStyle: TextStyle(
+          color: AppColors.blueDarker,
+          fontSize: 14,
+          fontWeight: FontWeight.w600,
+        ),
         border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(
-            color: Colors.grey.shade300,
+            color: Colors.grey.shade400,
             width: 1.5,
           ),
         ),
         enabledBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(
-            color: Colors.grey.shade300,
+            color: Colors.grey.shade400,
             width: 1.5,
           ),
         ),
         focusedBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(
             color: AppColors.blueRegular,
-            width: 2,
+            width: 2.5,
           ),
         ),
         errorBorder: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
+          borderRadius: BorderRadius.circular(8),
           borderSide: BorderSide(
             color: AppColors.red,
-            width: 1.5,
+            width: 2,
           ),
         ),
       ),
@@ -170,6 +185,17 @@ class AppTheme {
       inputDecorationTheme: InputDecorationTheme(
         filled: true,
         fillColor: AppColors.blueDarker,
+        contentPadding: const EdgeInsets.fromLTRB(16, 20, 16, 16),
+        isDense: false,
+        floatingLabelBehavior: FloatingLabelBehavior.always,
+        floatingLabelAlignment: FloatingLabelAlignment.start,
+        floatingLabelStyle: const TextStyle(
+          height: 1.0,
+          color: Colors.white,
+        ),
+        labelStyle: const TextStyle(
+          color: Colors.white,
+        ),
         border: OutlineInputBorder(
           borderRadius: BorderRadius.circular(8),
         ),

@@ -164,8 +164,6 @@ class HomeBloc extends Bloc<HomeEvent, HomeState> {
         sortType: _sortType,
         sortAscending: _sortAscending,
       ));
-      
-      emit(PasswordDeleted(event.passwordId));
     } catch (e) {
       emit(HomeError('Помилка видалення пароля: ${e.toString()}'));
     }
