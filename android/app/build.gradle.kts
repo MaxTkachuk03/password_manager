@@ -6,10 +6,10 @@ plugins {
 }
 
 dependencies {
-    // YubiKit Android dependencies
-    implementation("com.yubico.yubikit:yubikit-android:2.5.0")
-    implementation("com.yubico.yubikit:management:2.5.0")
-    implementation("com.yubico.yubikit:otp:2.5.0")
+    // YubiKit Android dependencies - commented out as we use mock implementation
+    // implementation("com.yubico.yubikit:yubikit-android:2.5.0")
+    // implementation("com.yubico.yubikit:management:2.5.0")
+    // implementation("com.yubico.yubikit:otp:2.5.0")
 }
 
 android {

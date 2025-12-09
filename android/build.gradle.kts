@@ -2,7 +2,8 @@ allprojects {
     repositories {
         google()
         mavenCentral()
-        maven { url = uri("https://raw.githubusercontent.com/Yubico/yubikit-android/master/snapshots") }
+        // YubiKit repository - commented out as we use mock implementation
+        // maven { url = uri("https://raw.githubusercontent.com/Yubico/yubikit-android/master/snapshots") }
     }
 }
 

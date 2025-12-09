@@ -29,19 +29,6 @@
             "preLaunchTask": "Prepare Device for Launch"
         },
         {
-            "name": "Launch Android",
-            "request": "launch",
-            "type": "dart",
-            "preLaunchTask": "Start Android Emulator",
-            "deviceId": "emulator-5554"
-        },
-        {
-            "name": "Launch iOS",
-            "request": "launch",
-            "type": "dart",
-            "preLaunchTask": "Start IOS Emulator"
-        },
-        {
             "name": "password_manager (Active Device)",
             "request": "launch",
             "type": "dart"
